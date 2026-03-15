@@ -609,7 +609,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-019` Implement fail-fast restore error handling and explicit restore-apply reporting.
 - [x] `CP-020` Implement clear user messaging for staged restore preparation, required restart, and restore completion.
 - [x] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
-- [ ] `CP-022` Package addon into an installable zip for GitHub distribution.
+- [x] `CP-022` Package addon into an installable zip for GitHub distribution.
 - [ ] `CP-023` Write evergreen README with install and use instructions only.
 - [ ] `CP-024` Run targeted validation for backup flow on one desktop platform.
 - [ ] `CP-025` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
@@ -620,7 +620,7 @@ Priority order below should be followed unless a blocker forces reordering.
 
 Current phase:
 
-- Phase 5: Restore Engine
+- Phase 7: Packaging and Documentation
 
 Current decisions already made:
 
@@ -704,6 +704,9 @@ Open items to resolve before implementation starts:
 - `CP-020`: compiled Python modules for restore message updates with `python3 -m py_compile resources/lib/main_window.py resources/lib/app.py`
 - `CP-020`: re-ran restore apply failure, restore apply success, restore staging, restore warning, restore preflight, restore archive, and backup manifest regressions with `python3 tests/manual_restore_apply_failure_check.py`, `python3 tests/manual_restore_apply_check.py`, `python3 tests/manual_restore_stage_check.py`, `python3 tests/manual_restore_warning_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
 - `CP-021`: validated the main XML window asset after layout and color-hierarchy changes with `python3 tests/manual_ui_asset_check.py`
+- `CP-022`: compiled the packaging script and package validation check with `python3 -m py_compile tools/build_addon_zip.py tests/manual_package_build_check.py`
+- `CP-022`: built the installable addon zip with `python3 tools/build_addon_zip.py`
+- `CP-022`: validated package naming, archive-root layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
 
 ## Change Log
 
@@ -737,6 +740,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-019` with fail-fast restore-apply error classification by stage/path, preserved pending staging on apply failure, and clearer startup failure reporting
 - Completed `CP-020` with shorter operational user messaging for restore preparation, restart-required apply, restore completion, and restore-apply failure states
 - Completed `CP-021` with a stronger black / blue / white XML layout, a clearer action rail, and more scannable status panels for remote-first use
+- Completed `CP-022` with a reusable addon-zip packaging script and a built `dist/script.kodi.mirror-0.1.0.zip` artifact ready for manual Kodi zip installation
 
 ## Session Handoff
 
@@ -763,6 +767,7 @@ Latest state:
 - `CP-019` is complete
 - `CP-020` is complete
 - `CP-021` is complete
+- `CP-022` is complete
 - Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
 - Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
 - Restore now checks manifest JSON structure, required restore roots, staging-path creation/writability, and restore staging free space before any extraction work begins
@@ -773,13 +778,14 @@ Latest state:
 - Restore apply failures now report the failing step and path more explicitly, and staged restore content remains in place after an apply failure for later inspection or retry
 - Restore preparation, restart-required apply, restore completion, and restore-apply failure dialogs now use shorter operational wording aligned with the product messaging constraints
 - The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling while preserving the existing workflow and control ids
+- Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with `addon.xml` at archive root and only the actual addon payload included
 - Compile, restore apply, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-022` package the addon into an installable zip for GitHub distribution.
-2. Preserve the current addon-root packaging contract with `addon.xml` at archive root instead of introducing alternate packaging paths.
-3. Keep README work scoped to `CP-023` unless `CP-022` exposes a real blocker.
+1. Start `CP-023` write an evergreen README with install and use instructions only.
+2. Treat `dist/script.kodi.mirror-0.1.0.zip` as the current install artifact and document the manual zip-install path before tackling repository-style distribution later.
+3. Keep desktop and Android validation scoped to `CP-024` and `CP-025` unless `CP-023` exposes a real blocker.
 
 Constraints to keep in view:
 
