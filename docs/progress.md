@@ -595,7 +595,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-005` Define destination path policy by platform and implement writability checks.
 - [x] `CP-006` Implement browse/select destination flow and persistence of the last valid destination.
 - [x] `CP-007` Implement backup preflight checks for source readability, destination readiness, and basic free-space validation.
-- [ ] `CP-008` Implement cleanup option model and defaults for the four approved paths.
+- [x] `CP-008` Implement cleanup option model and defaults for the four approved paths.
 - [ ] `CP-009` Implement cleanup execution and cleanup-result reporting.
 - [ ] `CP-010` Define backup archive layout and `backup_manifest.json` schema.
 - [ ] `CP-011` Implement backup file walk, filtering, and zip creation with compression level 6.
@@ -620,7 +620,7 @@ Priority order below should be followed unless a blocker forces reordering.
 
 Current phase:
 
-- Phase 4: Backup Engine
+- Phase 3: Cleanup Engine
 
 Current decisions already made:
 
@@ -665,6 +665,9 @@ Open items to resolve before implementation starts:
 - `CP-007`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_preflight.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_backup_preflight_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
 - `CP-007`: exercised backup preflight success and failure cases with `python3 tests/manual_backup_preflight_check.py`
 - `CP-007`: re-ran destination, persistence, path, and UI regression checks with `python3 tests/manual_destination_check.py`, `python3 tests/manual_destination_persistence_check.py`, `python3 tests/manual_path_resolution_check.py`, and `python3 tests/manual_ui_asset_check.py`
+- `CP-008`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_preflight.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_backup_preflight_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
+- `CP-008`: exercised cleanup target defaults and resolved paths with `python3 tests/manual_cleanup_model_check.py`
+- `CP-008`: re-ran preflight, destination, persistence, path, and UI regression checks with `python3 tests/manual_backup_preflight_check.py`, `python3 tests/manual_destination_check.py`, `python3 tests/manual_destination_persistence_check.py`, `python3 tests/manual_path_resolution_check.py`, and `python3 tests/manual_ui_asset_check.py`
 
 ## Change Log
 
@@ -684,6 +687,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-005` with platform default backup destination resolution, directory creation, writability probes, and main-window status display
 - Completed `CP-006` with browse-based destination selection, persistence of validated user choices, and active destination state display
 - Completed `CP-007` with backup preflight checks for source readability, destination readiness, recursive size estimation, and free-space validation
+- Completed `CP-008` with the approved cleanup target model, default selections, resolved cleanup paths, and cleanup summary display in the main window
 
 ## Session Handoff
 
@@ -696,14 +700,15 @@ Latest state:
 - `CP-005` is complete
 - `CP-006` is complete
 - `CP-007` is complete
-- Backup now runs explicit preflight checks before the placeholder backup action continues
-- Compile, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- `CP-008` is complete
+- Backup now carries explicit default cleanup selections alongside the existing preflight path
+- Compile, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-008` cleanup option model and defaults for the four approved cleanup targets.
-2. Follow with `CP-009` cleanup execution and result reporting, reusing the existing backup preflight gate before backup proceeds.
-3. Avoid reopening product-scope questions unless implementation exposes a real blocker.
+1. Start `CP-009` cleanup execution and result reporting using the cleanup selections already modeled in the main window.
+2. Keep cleanup execution limited to the four approved targets and report missing paths as skipped rather than failures.
+3. Reuse the existing backup preflight gate before backup proceeds, and avoid reopening product-scope questions unless implementation exposes a real blocker.
 
 Constraints to keep in view:
 

@@ -1,6 +1,7 @@
 import xbmcgui
 
 from resources.lib.backup_preflight import BackupPreflightError, run_backup_preflight
+from resources.lib.cleanup import build_cleanup_selections, format_cleanup_selections
 from resources.lib.destination import DestinationError, save_selected_backup_destination
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
@@ -8,6 +9,8 @@ from resources.lib.constants import (
     CONTROL_ID_BACKUP_DESTINATION_STATUS,
     CONTROL_ID_BACKUP,
     CONTROL_ID_BROWSE_DESTINATION,
+    CONTROL_ID_CLEANUP_SELECTIONS,
+    CONTROL_ID_CLEANUP_STATUS,
     CONTROL_ID_CLOSE,
     CONTROL_ID_RESTORE,
     CONTROL_ID_SETTINGS,
@@ -22,11 +25,13 @@ class MainWindow(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self._addon = kwargs["addon"]
         self._addon_name = kwargs["addon_name"]
+        self._cleanup_selections = build_cleanup_selections(kwargs["runtime_paths"])
         self._destination_state = kwargs["destination_state"]
         self._runtime_paths = kwargs["runtime_paths"]
 
     def onInit(self):
         self._refresh_destination_display()
+        self._refresh_cleanup_display()
         self.getControl(CONTROL_ID_USERDATA_PATH).setText(self._runtime_paths["userdata"])
         self.getControl(CONTROL_ID_ADDONS_PATH).setText(self._runtime_paths["addons"])
         self.setFocusId(CONTROL_ID_BACKUP)
@@ -44,6 +49,16 @@ class MainWindow(xbmcgui.WindowXMLDialog):
 
         self.getControl(CONTROL_ID_BACKUP_DESTINATION_PATH).setText(path_label)
         self.getControl(CONTROL_ID_BACKUP_DESTINATION_STATUS).setLabel(status_label)
+
+    def _refresh_cleanup_display(self):
+        cleanup_lines = format_cleanup_selections(self._cleanup_selections)
+        selected_count = sum(
+            1 for selection in self._cleanup_selections if selection["selected"]
+        )
+        self.getControl(CONTROL_ID_CLEANUP_SELECTIONS).setText("[CR]".join(cleanup_lines))
+        self.getControl(CONTROL_ID_CLEANUP_STATUS).setLabel(
+            f"{selected_count} cleanup targets selected by default."
+        )
 
     def _browse_destination(self):
         current_path = self._destination_state["path"]
@@ -105,6 +120,7 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 "Backup is not implemented yet.",
                 f"Destination: {preflight['destination_path']}",
                 f"Files ready: {preflight['file_count']}",
+                f"Cleanup selected: {sum(1 for item in self._cleanup_selections if item['selected'])}",
             )
             return
         elif control_id == CONTROL_ID_RESTORE:
