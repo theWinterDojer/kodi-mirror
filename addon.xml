@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.kodi.mirror"
+       name="KodiMirror"
+       version="0.1.0"
+       provider-name="dojer">
+  <requires>
+    <import addon="xbmc.python" version="3.0.1"/>
+  </requires>
+  <extension point="xbmc.python.script" library="addon.py">
+    <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Remote-friendly Kodi backup and staged restore.</summary>
+    <description lang="en_GB">KodiMirror backs up the active userdata and addons roots into a ZIP archive and stages replace-style restore apply after restart.</description>
+    <platform>all</platform>
+    <license>MIT</license>
+    <source>https://github.com/dojer/backup-kodi</source>
+    <news>Initial packaging baseline.</news>
+  </extension>
+</addon>

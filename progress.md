@@ -1,5 +1,7 @@
 # KodiMirror Progress
 
+Last updated: 2026-03-15
+
 ## Project Summary
 
 This project is a Kodi-native Python addon that provides a simple, remote-friendly backup and restore workflow for Kodi users.
@@ -65,8 +67,10 @@ Reasoning:
 Implementation defaults locked for v1:
 
 - addon id: `script.kodi.mirror`
+- initial addon version: `0.1.0`
 - addon type: Kodi script addon
 - minimum target: Kodi 20+
+- packaging format: Kodi addon zip with `addon.xml` at archive root
 - restore staging path: `special://profile/addon_data/script.kodi.mirror/pending_restore/`
 
 ### Source Path Strategy
@@ -584,7 +588,7 @@ Definition of done:
 
 Priority order below should be followed unless a blocker forces reordering.
 
-- [ ] `CP-001` Define addon identity, packaging format, and Kodi version target.
+- [x] `CP-001` Define addon identity, packaging format, and Kodi version target.
 - [ ] `CP-002` Create addon skeleton with `addon.xml`, entrypoint, and base module layout.
 - [ ] `CP-003` Implement runtime path resolution using Kodi special paths for source roots.
 - [ ] `CP-004` Decide and implement main UI structure: primary XML window plus supporting dialogs.
@@ -616,13 +620,15 @@ Priority order below should be followed unless a blocker forces reordering.
 
 Current phase:
 
-- Planning
+- Phase 1: Addon Skeleton and Foundation
 
 Current decisions already made:
 
 - Build from scratch as a Kodi-native addon
 - Use addon id `script.kodi.mirror`
+- Use initial addon version `0.1.0`
 - Target Kodi 20+
+- Package the addon as a Kodi zip with `addon.xml` at the archive root
 - Back up active `userdata/` and `addons/`
 - Allow full restore across platforms with warning
 - Use `/storage/emulated/0/Backup` as the Android / Fire TV default destination
@@ -638,7 +644,14 @@ Open items to resolve before implementation starts:
 
 - None. The implementation plan is locked for v1.
 
-## Change History
+## QA Ledger
+
+### 2026-03-15
+
+- `CP-001`: parsed `addon.xml` with `python3 -c "import xml.etree.ElementTree as ET; ET.parse('addon.xml')"`
+- `CP-001`: verified packaging baseline files with `rg --files`
+
+## Change Log
 
 ### 2026-03-15
 
@@ -649,19 +662,20 @@ Open items to resolve before implementation starts:
 - Updated destination behavior to remember the last valid selected location
 - Locked addon id, minimum Kodi target, desktop destination defaults, and staging path
 - Added explicit backup and restore preflight checks to the implementation plan
+- Completed `CP-001` with initial addon identity, version target, and package-root metadata
 
 ## Session Handoff
 
 Latest state:
 
-- Planning only
-- No implementation files have been created yet
-- No code has been validated yet
+- `CP-001` is complete
+- Package-root `addon.xml` and placeholder `addon.py` now exist
+- Basic addon metadata validation has been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-001` and `CP-002`.
-2. Encode the locked defaults directly in the addon skeleton.
+1. Start `CP-002` by replacing the placeholder entrypoint with the real addon skeleton and base module layout.
+2. Continue with `CP-003` runtime path resolution using Kodi special paths.
 3. Avoid reopening product-scope questions unless implementation exposes a real blocker.
 
 Constraints to keep in view:
