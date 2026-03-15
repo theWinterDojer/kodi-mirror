@@ -35,7 +35,7 @@ def main():
             "userdata": "/kodi/home/userdata",
             "addons": "/kodi/home/addons",
         },
-        preflight={
+        backup_stats={
             "file_count": 42,
             "source_bytes": 1024,
         },

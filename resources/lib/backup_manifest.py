@@ -46,7 +46,7 @@ def _build_cleanup_manifest_entries(cleanup_selections, cleanup_results):
 def build_backup_manifest(
     addon_version,
     runtime_paths,
-    preflight,
+    backup_stats,
     cleanup_selections,
     cleanup_results=None,
     created_timestamp=None,
@@ -79,6 +79,6 @@ def build_backup_manifest(
             cleanup_results,
         ),
         "included_top_level_roots": list(ARCHIVE_ROOTS),
-        "file_count": preflight["file_count"],
-        "uncompressed_byte_size": preflight["source_bytes"],
+        "file_count": backup_stats["file_count"],
+        "uncompressed_byte_size": backup_stats["source_bytes"],
     }
