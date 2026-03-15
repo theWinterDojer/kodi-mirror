@@ -48,7 +48,9 @@ def main():
                 ),
                 "userdata/guisettings.xml": "<new-settings />",
                 "userdata/addon_data/plugin.example/settings.xml": "<plugin-settings />",
+                "userdata/addon_data/script.kodi.mirror/restore-state.json": '{"staged": true}',
                 "addons/plugin.video.example/addon.xml": "<new-addon />",
+                "addons/script.kodi.mirror/addon.xml": "<staged-self-addon />",
             },
         )
 
@@ -73,6 +75,22 @@ def main():
         write_text(
             os.path.join(runtime_paths["addons"], "plugin.video.old", "addon.xml"),
             "<obsolete-addon />",
+        )
+        write_text(
+            os.path.join(runtime_paths["userdata"], "addon_data", "script.kodi.mirror", "live.json"),
+            '{"live": true}',
+        )
+        write_text(
+            os.path.join(runtime_paths["userdata"], "addon_data", "script.kodi.mirror", "keep.txt"),
+            "keep-me",
+        )
+        write_text(
+            os.path.join(runtime_paths["addons"], "script.kodi.mirror", "addon.xml"),
+            "<live-self-addon />",
+        )
+        write_text(
+            os.path.join(runtime_paths["addons"], "script.kodi.mirror", "keep.txt"),
+            "keep-me",
         )
 
         preflight = run_restore_preflight(
@@ -102,6 +120,18 @@ def main():
         assert read_text(
             os.path.join(runtime_paths["addons"], "plugin.video.example", "addon.xml")
         ) == "<new-addon />"
+        assert read_text(
+            os.path.join(runtime_paths["userdata"], "addon_data", "script.kodi.mirror", "live.json")
+        ) == '{"live": true}'
+        assert read_text(
+            os.path.join(runtime_paths["addons"], "script.kodi.mirror", "addon.xml")
+        ) == "<live-self-addon />"
+        assert read_text(
+            os.path.join(runtime_paths["userdata"], "addon_data", "script.kodi.mirror", "keep.txt")
+        ) == "keep-me"
+        assert read_text(
+            os.path.join(runtime_paths["addons"], "script.kodi.mirror", "keep.txt")
+        ) == "keep-me"
         assert not os.path.exists(os.path.join(runtime_paths["userdata"], "obsolete.txt"))
         assert not os.path.exists(os.path.join(runtime_paths["addons"], "plugin.video.old"))
         assert has_pending_restore(runtime_paths) is False

@@ -605,7 +605,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-015` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
 - [x] `CP-016` Implement staged restore payload extraction and pending restore plan creation.
 - [x] `CP-017` Implement startup detection of pending restore and replace-style restore apply.
-- [ ] `CP-018` Exclude this addon's own addon folder and addon_data folder from restore apply.
+- [x] `CP-018` Exclude this addon's own addon folder and addon_data folder from restore apply.
 - [ ] `CP-019` Implement fail-fast restore error handling and explicit restore-apply reporting.
 - [ ] `CP-020` Implement clear user messaging for staged restore preparation, required restart, and restore completion.
 - [ ] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
@@ -695,6 +695,9 @@ Open items to resolve before implementation starts:
 - `CP-017`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py resources/lib/restore_apply.py resources/lib/restore_archive.py resources/lib/restore_preflight.py resources/lib/restore_stage.py resources/lib/restore_warning.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_backup_progress_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_restore_apply_check.py tests/manual_restore_archive_check.py tests/manual_restore_preflight_check.py tests/manual_restore_stage_check.py tests/manual_restore_warning_check.py tests/manual_ui_asset_check.py`
 - `CP-017`: exercised pending-plan detection, replace-style apply, target cleanup of paths absent from the backup, and staging cleanup after success with `python3 tests/manual_restore_apply_check.py`
 - `CP-017`: re-ran restore staging, restore warning, restore preflight, restore archive, and backup manifest regressions with `python3 tests/manual_restore_stage_check.py`, `python3 tests/manual_restore_warning_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
+- `CP-018`: compiled Python modules with `python3 -m py_compile resources/lib/restore_apply.py tests/manual_restore_apply_check.py`
+- `CP-018`: exercised self-exclusion of this addon's addon folder and addon_data folder while preserving normal replace-style apply for other paths with `python3 tests/manual_restore_apply_check.py`
+- `CP-018`: re-ran restore staging, restore warning, restore preflight, restore archive, and backup manifest regressions with `python3 tests/manual_restore_stage_check.py`, `python3 tests/manual_restore_warning_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
 
 ## Change Log
 
@@ -724,6 +727,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-015` with restore manifest parsing for platform and Kodi-version fields plus non-blocking mismatch warnings in the restore readiness flow
 - Completed `CP-016` with staged restore extraction into the locked pending-restore path, pending restore plan creation, and hard failure for unsafe or unsupported archive entries
 - Completed `CP-017` with startup detection of `pending_restore_plan.json`, generic replace-style apply for staged `userdata/` and `addons/`, and staging cleanup after successful restore apply
+- Completed `CP-018` with explicit restore-apply exclusion of this addon's live addon folder and addon_data folder while preserving replace semantics for all other paths
 
 ## Session Handoff
 
@@ -746,20 +750,21 @@ Latest state:
 - `CP-015` is complete
 - `CP-016` is complete
 - `CP-017` is complete
+- `CP-018` is complete
 - Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
 - Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
 - Restore now checks manifest JSON structure, required restore roots, staging-path creation/writability, and restore staging free space before any extraction work begins
 - Restore now warns when the backup platform family differs or the Kodi major version differs, while keeping restore allowed for later steps
 - Restore now extracts the backup into staged `payload/` content, writes `pending_restore_plan.json`, clears stale staged content first, and refuses unsafe or unsupported archive members
 - Startup now detects a pending restore, applies staged `userdata/` and `addons/` with replace semantics, removes target paths absent from the staged payload, and clears staging on success
-- `CP-018` is still required before the restore flow is safe against self-overwrite of this addon during apply
+- Restore apply now skips this addon's live `addons/script.kodi.mirror/` and `userdata/addon_data/script.kodi.mirror/` trees so startup apply no longer self-overwrites the running addon
 - Compile, restore apply, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-018` exclusion of this addon's own addon folder and addon_data folder from restore apply.
-2. Reuse the new replace-style apply engine and add exclusion checks there instead of introducing alternate restore formats or compatibility paths.
-3. Keep explicit restore-apply failure reporting scoped to `CP-019` unless `CP-018` exposes a real blocker.
+1. Start `CP-019` explicit fail-fast restore-apply error handling and user-facing restore-apply reporting.
+2. Reuse the current apply engine and refine failure/reporting behavior there instead of introducing alternate restore formats or compatibility paths.
+3. Keep staged-restore completion messaging scoped to `CP-020` unless `CP-019` exposes a real blocker.
 
 Constraints to keep in view:
 

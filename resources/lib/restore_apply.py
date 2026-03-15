@@ -3,12 +3,17 @@ import os
 import shutil
 
 from resources.lib.constants import (
+    ADDON_ID,
     PENDING_RESTORE_PLAN_NAME,
     PENDING_RESTORE_PLAN_SCHEMA_VERSION,
 )
 
 
 REQUIRED_RESTORE_ROOTS = ("userdata", "addons")
+EXCLUDED_RESTORE_PATHS = {
+    "addons": (ADDON_ID,),
+    "userdata": (os.path.join("addon_data", ADDON_ID),),
+}
 
 
 class RestoreApplyError(RuntimeError):
@@ -125,6 +130,21 @@ def _collect_tree_paths(root_path):
     }
 
 
+def _is_excluded_restore_path(root_name, relative_path):
+    normalized_path = os.path.normpath(relative_path or "")
+    if normalized_path in ("", "."):
+        return False
+
+    excluded_prefixes = EXCLUDED_RESTORE_PATHS.get(root_name, ())
+    for excluded_prefix in excluded_prefixes:
+        normalized_prefix = os.path.normpath(excluded_prefix)
+        if normalized_path == normalized_prefix:
+            return True
+        if normalized_path.startswith(normalized_prefix + os.sep):
+            return True
+    return False
+
+
 def _ensure_target_root(target_root):
     if os.path.islink(target_root):
         try:
@@ -144,7 +164,7 @@ def _ensure_target_root(target_root):
         raise RestoreApplyError(f"Could not create restore target root: {target_root} ({exc})")
 
 
-def _remove_extra_target_paths(target_root, staged_paths):
+def _remove_extra_target_paths(root_name, target_root, staged_paths):
     removed_count = 0
 
     for current_root, dirnames, filenames in os.walk(target_root, topdown=False):
@@ -155,6 +175,8 @@ def _remove_extra_target_paths(target_root, staged_paths):
         for filename in filenames:
             current_path = os.path.join(current_root, filename)
             relative_path = os.path.join(relative_root, filename) if relative_root else filename
+            if _is_excluded_restore_path(root_name, relative_path):
+                continue
             if relative_path in staged_paths["files"]:
                 continue
             try:
@@ -166,6 +188,8 @@ def _remove_extra_target_paths(target_root, staged_paths):
         for dirname in dirnames:
             current_path = os.path.join(current_root, dirname)
             relative_path = os.path.join(relative_root, dirname) if relative_root else dirname
+            if _is_excluded_restore_path(root_name, relative_path):
+                continue
             if relative_path in staged_paths["directories"]:
                 continue
 
@@ -183,13 +207,15 @@ def _remove_extra_target_paths(target_root, staged_paths):
     return removed_count
 
 
-def _apply_staged_root(staged_root, target_root):
+def _apply_staged_root(root_name, staged_root, target_root):
     staged_paths = _collect_tree_paths(staged_root)
     _ensure_target_root(target_root)
-    removed_count = _remove_extra_target_paths(target_root, staged_paths)
+    removed_count = _remove_extra_target_paths(root_name, target_root, staged_paths)
     copied_count = 0
 
     for relative_directory in sorted(staged_paths["directories"]):
+        if _is_excluded_restore_path(root_name, relative_directory):
+            continue
         target_directory = os.path.join(target_root, relative_directory)
         if os.path.islink(target_directory):
             try:
@@ -215,6 +241,8 @@ def _apply_staged_root(staged_root, target_root):
             )
 
     for relative_file in sorted(staged_paths["files"]):
+        if _is_excluded_restore_path(root_name, relative_file):
+            continue
         source_path = os.path.join(staged_root, relative_file)
         target_path = os.path.join(target_root, relative_file)
         parent_path = os.path.dirname(target_path)
@@ -283,6 +311,7 @@ def apply_pending_restore(runtime_paths):
 
     for root_name in REQUIRED_RESTORE_ROOTS:
         result = _apply_staged_root(
+            root_name,
             pending_restore["staged_root_paths"][root_name],
             pending_restore["target_root_paths"][root_name],
         )
