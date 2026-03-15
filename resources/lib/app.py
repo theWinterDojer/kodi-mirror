@@ -8,6 +8,7 @@ from resources.lib.paths import PathResolutionError, resolve_runtime_paths
 from resources.lib.restore_apply import (
     RestoreApplyError,
     apply_pending_restore,
+    format_restore_apply_stage,
     has_pending_restore,
 )
 
@@ -35,7 +36,9 @@ def run():
             xbmcgui.Dialog().ok(
                 addon_name,
                 "Restore apply failed.",
+                f"Step: {format_restore_apply_stage(exc.stage)}",
                 str(exc),
+                "Staged restore is still pending.",
             )
             return
 
