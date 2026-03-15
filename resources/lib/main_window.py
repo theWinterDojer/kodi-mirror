@@ -18,6 +18,7 @@ from resources.lib.cleanup import (
     run_cleanup,
 )
 from resources.lib.destination import DestinationError, save_selected_backup_destination
+from resources.lib.restore_archive import RestoreArchiveError, validate_restore_archive
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
     CONTROL_ID_BACKUP_DESTINATION_PATH,
@@ -106,6 +107,38 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             self._destination_state["path"],
         )
 
+    def _browse_restore_archive(self):
+        start_path = self._destination_state["path"] or ""
+        selected_path = xbmcgui.Dialog().browseSingle(
+            1,
+            "Select backup archive",
+            "files",
+            ".zip",
+            False,
+            False,
+            start_path,
+        )
+        if not selected_path:
+            return
+
+        try:
+            archive_details = validate_restore_archive(selected_path)
+        except RestoreArchiveError as exc:
+            xbmcgui.Dialog().ok(
+                self._addon_name,
+                "Restore cannot start.",
+                str(exc),
+                "Choose a valid KodiMirror backup zip.",
+            )
+            return
+
+        xbmcgui.Dialog().ok(
+            self._addon_name,
+            "Restore archive ready.",
+            archive_details["path"],
+            f"Archive entries: {archive_details['entry_count']}",
+        )
+
     def onClick(self, control_id):
         if control_id == CONTROL_ID_CLOSE:
             self.close()
@@ -188,9 +221,11 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 f"Cleanup skipped: {skipped_count}",
             )
             return
-        elif control_id == CONTROL_ID_RESTORE:
-            heading = "Restore"
-        elif control_id == CONTROL_ID_SETTINGS:
+        if control_id == CONTROL_ID_RESTORE:
+            self._browse_restore_archive()
+            return
+
+        if control_id == CONTROL_ID_SETTINGS:
             heading = "Settings"
         else:
             return

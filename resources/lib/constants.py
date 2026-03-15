@@ -1,4 +1,5 @@
 ADDON_ID = "script.kodi.mirror"
+ARCHIVE_MANIFEST_NAME = "backup_manifest.json"
 SETTING_BACKUP_DESTINATION = "backup_destination"
 RESTORE_STAGING_PATH = "special://profile/addon_data/script.kodi.mirror/pending_restore/"
 SPECIAL_HOME_PATH = "special://home/"

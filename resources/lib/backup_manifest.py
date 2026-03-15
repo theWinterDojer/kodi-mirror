@@ -2,10 +2,9 @@ from datetime import datetime, timezone
 
 import xbmc
 
+from resources.lib.constants import ARCHIVE_MANIFEST_NAME
 from resources.lib.destination import detect_platform_family
 
-
-ARCHIVE_MANIFEST_NAME = "backup_manifest.json"
 ARCHIVE_ROOTS = ("userdata", "addons")
 MANIFEST_SCHEMA_VERSION = 1
 
