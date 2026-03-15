@@ -1,2 +1,5 @@
-"""Temporary addon entrypoint placeholder for packaging baseline work."""
+from resources.lib.app import run
 
+
+if __name__ == "__main__":
+    run()
