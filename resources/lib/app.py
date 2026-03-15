@@ -2,13 +2,15 @@ import xbmcaddon
 import xbmcgui
 
 from resources.lib import log
-from resources.lib.paths import PathResolutionError, format_runtime_paths, resolve_runtime_paths
+from resources.lib.main_window import open_main_window
+from resources.lib.paths import PathResolutionError, resolve_runtime_paths
 
 
 def run():
     addon = xbmcaddon.Addon()
     addon_name = addon.getAddonInfo("name")
     addon_version = addon.getAddonInfo("version")
+    addon_path = addon.getAddonInfo("path")
 
     log.info(f"Launching {addon_name} {addon_version}")
     try:
@@ -18,8 +20,5 @@ def run():
         xbmcgui.Dialog().ok(addon_name, "Startup failed.", str(exc))
         return
 
-    xbmcgui.Dialog().ok(
-        addon_name,
-        "Runtime paths resolved.",
-        *format_runtime_paths(runtime_paths),
-    )
+    log.info("Opening main window")
+    open_main_window(addon_path, addon_name, runtime_paths)

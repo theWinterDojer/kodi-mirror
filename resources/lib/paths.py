@@ -1,6 +1,3 @@
-import os
-
-import xbmc
 import xbmcvfs
 
 from resources.lib.constants import (
@@ -51,7 +48,3 @@ def format_runtime_paths(paths):
         f"userdata: {paths['userdata']}",
         f"addons: {paths['addons']}",
     ]
-
-
-def running_in_kodi():
-    return hasattr(xbmc, "getInfoLabel")

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+  <defaultcontrol always="true">1001</defaultcontrol>
+  <controls>
+    <control type="group">
+      <left>90</left>
+      <top>70</top>
+      <control type="label">
+        <left>0</left>
+        <top>0</top>
+        <width>1740</width>
+        <height>60</height>
+        <font>font14</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <label>KodiMirror</label>
+      </control>
+      <control type="label">
+        <left>0</left>
+        <top>70</top>
+        <width>1740</width>
+        <height>40</height>
+        <font>font13</font>
+        <textcolor>FF9FB7D4</textcolor>
+        <label>Backup, restore, and settings in one remote-friendly window.</label>
+      </control>
+      <control type="grouplist">
+        <left>0</left>
+        <top>170</top>
+        <width>660</width>
+        <height>520</height>
+        <itemgap>22</itemgap>
+        <orientation>vertical</orientation>
+        <control type="button" id="1001">
+          <width>660</width>
+          <height>110</height>
+          <font>font14</font>
+          <textcolor>FFFFFFFF</textcolor>
+          <focusedcolor>FF101010</focusedcolor>
+          <label>Backup</label>
+        </control>
+        <control type="button" id="1002">
+          <width>660</width>
+          <height>110</height>
+          <font>font14</font>
+          <textcolor>FFFFFFFF</textcolor>
+          <focusedcolor>FF101010</focusedcolor>
+          <label>Restore</label>
+        </control>
+        <control type="button" id="1003">
+          <width>660</width>
+          <height>110</height>
+          <font>font14</font>
+          <textcolor>FFFFFFFF</textcolor>
+          <focusedcolor>FF101010</focusedcolor>
+          <label>Settings</label>
+        </control>
+        <control type="button" id="1004">
+          <width>660</width>
+          <height>90</height>
+          <font>font13</font>
+          <textcolor>FFCFD9E6</textcolor>
+          <focusedcolor>FF101010</focusedcolor>
+          <label>Close</label>
+        </control>
+      </control>
+      <control type="group">
+        <left>760</left>
+        <top>170</top>
+        <control type="label">
+          <left>0</left>
+          <top>0</top>
+          <width>900</width>
+          <height>36</height>
+          <font>font14</font>
+          <textcolor>FFFFFFFF</textcolor>
+          <label>Active Source Roots</label>
+        </control>
+        <control type="label">
+          <left>0</left>
+          <top>54</top>
+          <width>900</width>
+          <height>30</height>
+          <font>font12</font>
+          <textcolor>FF9FB7D4</textcolor>
+          <label>userdata</label>
+        </control>
+        <control type="textbox" id="1101">
+          <left>0</left>
+          <top>92</top>
+          <width>900</width>
+          <height>140</height>
+          <font>font12</font>
+          <textcolor>FFFFFFFF</textcolor>
+        </control>
+        <control type="label">
+          <left>0</left>
+          <top>268</top>
+          <width>900</width>
+          <height>30</height>
+          <font>font12</font>
+          <textcolor>FF9FB7D4</textcolor>
+          <label>addons</label>
+        </control>
+        <control type="textbox" id="1102">
+          <left>0</left>
+          <top>306</top>
+          <width>900</width>
+          <height>140</height>
+          <font>font12</font>
+          <textcolor>FFFFFFFF</textcolor>
+        </control>
+      </control>
+    </control>
+  </controls>
+</window>

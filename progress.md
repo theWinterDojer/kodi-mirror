@@ -591,7 +591,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-001` Define addon identity, packaging format, and Kodi version target.
 - [x] `CP-002` Create addon skeleton with `addon.xml`, entrypoint, and base module layout.
 - [x] `CP-003` Implement runtime path resolution using Kodi special paths for source roots.
-- [ ] `CP-004` Decide and implement main UI structure: primary XML window plus supporting dialogs.
+- [x] `CP-004` Decide and implement main UI structure: primary XML window plus supporting dialogs.
 - [ ] `CP-005` Define destination path policy by platform and implement writability checks.
 - [ ] `CP-006` Implement browse/select destination flow and persistence of the last valid destination.
 - [ ] `CP-007` Implement backup preflight checks for source readability, destination readiness, and basic free-space validation.
@@ -654,6 +654,8 @@ Open items to resolve before implementation starts:
 - `CP-002`: verified skeleton file layout with `rg --files`
 - `CP-003`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/constants.py resources/lib/log.py resources/lib/paths.py`
 - `CP-003`: exercised path resolution with a stubbed Kodi runtime via `python3 tests/manual_path_resolution_check.py`
+- `CP-004`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/constants.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
+- `CP-004`: verified main window XML asset with `python3 tests/manual_ui_asset_check.py`
 
 ## Change Log
 
@@ -669,6 +671,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-001` with initial addon identity, version target, and package-root metadata
 - Completed `CP-002` with a runnable addon bootstrap and base `resources/lib` module layout
 - Completed `CP-003` with Kodi special-path runtime resolution for source roots and restore staging
+- Completed `CP-004` with the primary XML-backed main window and supporting placeholder dialogs
 
 ## Session Handoff
 
@@ -677,13 +680,14 @@ Latest state:
 - `CP-001` is complete
 - `CP-002` is complete
 - `CP-003` is complete
-- Runtime source-path resolution now uses Kodi special paths in the app bootstrap
-- Compile and resolver validation have been recorded in the QA ledger
+- `CP-004` is complete
+- Normal launch now opens the primary XML-backed main window
+- Compile and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-004` by defining the primary XML-backed workflow window and supporting dialogs.
-2. Continue with `CP-005` destination default-path policy and writability checks.
+1. Start `CP-005` destination default-path policy and writability checks.
+2. Continue with `CP-006` browse/select destination flow and persistence of the last valid destination.
 3. Avoid reopening product-scope questions unless implementation exposes a real blocker.
 
 Constraints to keep in view:
