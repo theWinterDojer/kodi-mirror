@@ -1,5 +1,10 @@
 import xbmcgui
 
+from resources.lib.backup_manifest import (
+    ARCHIVE_MANIFEST_NAME,
+    BackupManifestError,
+    build_backup_manifest,
+)
 from resources.lib.backup_preflight import BackupPreflightError, run_backup_preflight
 from resources.lib.cleanup import (
     CleanupError,
@@ -134,11 +139,28 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             removed_count = sum(1 for item in cleanup_results if item["status"] == "removed")
             skipped_count = sum(1 for item in cleanup_results if item["status"] == "skipped")
 
+            try:
+                manifest = build_backup_manifest(
+                    addon_version=self._addon.getAddonInfo("version"),
+                    runtime_paths=self._runtime_paths,
+                    preflight=preflight,
+                    cleanup_selections=self._cleanup_selections,
+                    cleanup_results=cleanup_results,
+                )
+            except BackupManifestError as exc:
+                xbmcgui.Dialog().ok(
+                    self._addon_name,
+                    "Backup cannot start.",
+                    str(exc),
+                )
+                return
+
             xbmcgui.Dialog().ok(
                 self._addon_name,
                 "Backup is not implemented yet.",
                 f"Destination: {preflight['destination_path']}",
-                f"Files ready: {preflight['file_count']}",
+                f"Manifest: {ARCHIVE_MANIFEST_NAME}",
+                f"Files ready: {manifest['file_count']}",
                 f"Cleanup removed: {removed_count}",
                 f"Cleanup skipped: {skipped_count}",
             )
