@@ -1,7 +1,10 @@
 ADDON_ID = "script.kodi.mirror"
 ARCHIVE_MANIFEST_NAME = "backup_manifest.json"
+PENDING_RESTORE_PLAN_NAME = "pending_restore_plan.json"
+PENDING_RESTORE_PLAN_SCHEMA_VERSION = 1
 SETTING_BACKUP_DESTINATION = "backup_destination"
 RESTORE_STAGING_PATH = "special://profile/addon_data/script.kodi.mirror/pending_restore/"
+RESTORE_PAYLOAD_DIRECTORY_NAME = "payload"
 SPECIAL_HOME_PATH = "special://home/"
 SPECIAL_MASTERPROFILE_PATH = "special://masterprofile/"
 SPECIAL_USERDATA_PATH = "special://home/userdata/"

@@ -603,7 +603,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-013` Implement restore archive selection and archive validation.
 - [x] `CP-014` Implement restore preflight checks for archive readability, manifest validity, staging readiness, and basic free-space validation.
 - [x] `CP-015` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
-- [ ] `CP-016` Implement staged restore payload extraction and pending restore plan creation.
+- [x] `CP-016` Implement staged restore payload extraction and pending restore plan creation.
 - [ ] `CP-017` Implement startup detection of pending restore and replace-style restore apply.
 - [ ] `CP-018` Exclude this addon's own addon folder and addon_data folder from restore apply.
 - [ ] `CP-019` Implement fail-fast restore error handling and explicit restore-apply reporting.
@@ -689,6 +689,9 @@ Open items to resolve before implementation starts:
 - `CP-015`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py resources/lib/restore_archive.py resources/lib/restore_preflight.py resources/lib/restore_warning.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_backup_progress_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_restore_archive_check.py tests/manual_restore_preflight_check.py tests/manual_restore_warning_check.py tests/manual_ui_asset_check.py`
 - `CP-015`: exercised no-warning, platform-mismatch warning, Kodi-major-mismatch warning, combined-warning, and missing-manifest-field failures with `python3 tests/manual_restore_warning_check.py`
 - `CP-015`: re-ran restore preflight, restore archive, and backup manifest regressions with `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
+- `CP-016`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py resources/lib/restore_archive.py resources/lib/restore_preflight.py resources/lib/restore_stage.py resources/lib/restore_warning.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_backup_progress_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_restore_archive_check.py tests/manual_restore_preflight_check.py tests/manual_restore_stage_check.py tests/manual_restore_warning_check.py tests/manual_ui_asset_check.py`
+- `CP-016`: exercised staged extraction success, stale-staging cleanup, pending-plan creation, unsafe-entry failure, and unsupported-entry failure with `python3 tests/manual_restore_stage_check.py`
+- `CP-016`: re-ran restore warning, restore preflight, restore archive, backup manifest, and backup archive regressions with `python3 tests/manual_restore_warning_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, `python3 tests/manual_backup_manifest_check.py`, and `python3 tests/manual_backup_archive_check.py`
 
 ## Change Log
 
@@ -716,6 +719,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-013` with ZIP archive selection from the main UI, restore archive validation against the current backup contract, and explicit unsupported-archive messaging
 - Completed `CP-014` with restore preflight checks for manifest JSON validity, required restore roots, staging-directory readiness, and free-space validation before restore staging
 - Completed `CP-015` with restore manifest parsing for platform and Kodi-version fields plus non-blocking mismatch warnings in the restore readiness flow
+- Completed `CP-016` with staged restore extraction into the locked pending-restore path, pending restore plan creation, and hard failure for unsafe or unsupported archive entries
 
 ## Session Handoff
 
@@ -736,17 +740,19 @@ Latest state:
 - `CP-013` is complete
 - `CP-014` is complete
 - `CP-015` is complete
+- `CP-016` is complete
 - Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
 - Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
 - Restore now checks manifest JSON structure, required restore roots, staging-path creation/writability, and restore staging free space before any extraction work begins
 - Restore now warns when the backup platform family differs or the Kodi major version differs, while keeping restore allowed for later steps
-- Compile, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- Restore now extracts the backup into staged `payload/` content, writes `pending_restore_plan.json`, clears stale staged content first, and refuses unsafe or unsupported archive members
+- Compile, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-016` staged restore payload extraction and pending restore plan creation.
-2. Reuse the validated archive and manifest state from restore preflight instead of introducing alternate restore formats or compatibility paths.
-3. Keep startup detection and replace-style apply scoped to `CP-017` unless `CP-016` exposes a real blocker.
+1. Start `CP-017` startup detection of pending restore and replace-style restore apply.
+2. Reuse `pending_restore_plan.json` and the staged `payload/` tree instead of introducing alternate restore formats or compatibility paths.
+3. Keep explicit self-exclusion behavior scoped to `CP-018` unless `CP-017` exposes a real blocker.
 
 Constraints to keep in view:
 

@@ -20,6 +20,7 @@ from resources.lib.cleanup import (
 from resources.lib.destination import DestinationError, save_selected_backup_destination
 from resources.lib.restore_archive import RestoreArchiveError, validate_restore_archive
 from resources.lib.restore_preflight import RestorePreflightError, run_restore_preflight
+from resources.lib.restore_stage import RestoreStageError, stage_restore_payload
 from resources.lib.restore_warning import RestoreWarningError, build_restore_warnings
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
@@ -167,10 +168,22 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             dialog_lines.append("Some addons may not work on this device.")
             dialog_lines.append("Restart is required after staging.")
 
+        try:
+            staged_restore = stage_restore_payload(self._runtime_paths, preflight)
+        except RestoreStageError as exc:
+            xbmcgui.Dialog().ok(
+                self._addon_name,
+                "Restore staging failed.",
+                str(exc),
+            )
+            return
+
         xbmcgui.Dialog().ok(
             self._addon_name,
-            "Restore is ready to stage.",
+            "Restore prepared.",
             *dialog_lines,
+            f"Pending plan: {staged_restore['plan_path']}",
+            "Restart Kodi to apply this restore.",
         )
 
     def onClick(self, control_id):
