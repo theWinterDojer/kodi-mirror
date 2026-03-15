@@ -3,6 +3,8 @@ import uuid
 
 import xbmc
 
+from resources.lib.constants import SETTING_BACKUP_DESTINATION
+
 
 ANDROID_BACKUP_ROOT = "/storage/emulated/0/Backup"
 BACKUP_DIRECTORY_NAME = "Backup"
@@ -10,6 +12,15 @@ BACKUP_DIRECTORY_NAME = "Backup"
 
 class DestinationError(RuntimeError):
     pass
+
+
+def _build_destination_state(path, is_ready, error, source):
+    return {
+        "path": path,
+        "is_ready": is_ready,
+        "error": error,
+        "source": source,
+    }
 
 
 def detect_platform_family():
@@ -85,23 +96,33 @@ def resolve_default_destination_state(environment=None):
     try:
         destination_path = resolve_default_backup_destination(environment)
     except DestinationError as exc:
-        return {
-            "path": "",
-            "is_ready": False,
-            "error": str(exc),
-        }
+        return _build_destination_state("", False, str(exc), "default")
 
     try:
         ready_path = validate_backup_destination(destination_path)
     except DestinationError as exc:
-        return {
-            "path": destination_path,
-            "is_ready": False,
-            "error": str(exc),
-        }
+        return _build_destination_state(destination_path, False, str(exc), "default")
 
-    return {
-        "path": ready_path,
-        "is_ready": True,
-        "error": "",
-    }
+    return _build_destination_state(ready_path, True, "", "default")
+
+
+def get_saved_backup_destination(addon):
+    return addon.getSetting(SETTING_BACKUP_DESTINATION).strip()
+
+
+def resolve_active_destination_state(addon, environment=None):
+    saved_destination = get_saved_backup_destination(addon)
+    if saved_destination:
+        try:
+            ready_path = validate_backup_destination(saved_destination)
+        except DestinationError as exc:
+            return _build_destination_state(saved_destination, False, str(exc), "saved")
+        return _build_destination_state(ready_path, True, "", "saved")
+
+    return resolve_default_destination_state(environment)
+
+
+def save_selected_backup_destination(addon, path):
+    validated_path = validate_backup_destination(path)
+    addon.setSetting(SETTING_BACKUP_DESTINATION, validated_path)
+    return _build_destination_state(validated_path, True, "", "saved")
