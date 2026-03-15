@@ -116,6 +116,7 @@ Note:
 - Black, blue, and white theme
 - Simple informative messages only
 - Avoid free-text entry unless necessary
+- Explain preflight failures plainly before backup or restore starts
 
 ### Proposed v1 Navigation
 
@@ -160,6 +161,21 @@ Current preferred approach:
 - Progress dialog during backup and restore
 
 ## Backup Model
+
+### Backup Preflight Checks
+
+Before backup starts, the addon should verify:
+
+- source roots exist and are readable
+- destination directory exists or can be created
+- destination directory is writable
+- enough free space is available for the expected archive write
+
+Behavior:
+
+- fail before cleanup or archive creation if a required preflight check fails
+- show a short, explicit message describing what failed and what path was involved
+- do not continue with partial backup setup after a failed preflight
 
 ### What a Backup Represents
 
@@ -271,6 +287,23 @@ Warning language should state:
 - Do not perform live in-place restore of active Kodi roots
 - Stage restore payload before apply
 - Exclude this backup addon from restore apply so the running restore mechanism does not overwrite itself
+
+### Restore Preflight Checks
+
+Before restore staging starts, the addon should verify:
+
+- selected archive exists and is readable
+- archive format is supported
+- `backup_manifest.json` exists and parses successfully
+- staging directory exists or can be created
+- staging directory is writable
+- enough free space is available for staged extraction and restore apply preparation
+
+Behavior:
+
+- fail before staging if a required preflight check fails
+- show a short, explicit message describing the failure
+- do not ask the user to restart Kodi unless staging completed successfully
 
 ### Restore Behavior
 
@@ -436,6 +469,7 @@ Deliverables:
 - writability checks
 - browse action
 - persisted addon setting for preferred destination only
+- destination preflight primitives usable by backup flow
 
 Definition of done:
 
@@ -471,6 +505,7 @@ Create the archive correctly and efficiently.
 
 Deliverables:
 
+- backup preflight checks for source readability, destination readiness, and basic free-space validation
 - recursive file collection for `userdata/` and `addons/`
 - zip creation with compression level 6
 - `backup_manifest.json`
@@ -479,6 +514,7 @@ Deliverables:
 
 Definition of done:
 
+- backup fails early with a clear message if preflight fails
 - a backup zip is produced successfully
 - archive contains expected directory roots
 - manifest reflects the actual backup
@@ -494,6 +530,7 @@ Deliverables:
 - archive validation
 - manifest parsing
 - warning logic for platform family and Kodi major mismatch
+- restore preflight checks for archive readability, staging readiness, manifest validity, and basic free-space validation
 - staging of restore payload and pending restore plan
 - path-safe replace apply after restart
 - self-exclusion for this addon during apply
@@ -501,6 +538,7 @@ Deliverables:
 
 Definition of done:
 
+- restore fails early with a clear message if preflight fails
 - a valid backup can be staged and then applied into a test environment
 - unsafe archive entries are rejected
 - restore apply halts on critical write/delete failure and reports it clearly
@@ -552,25 +590,27 @@ Priority order below should be followed unless a blocker forces reordering.
 - [ ] `CP-004` Decide and implement main UI structure: primary XML window plus supporting dialogs.
 - [ ] `CP-005` Define destination path policy by platform and implement writability checks.
 - [ ] `CP-006` Implement browse/select destination flow and persistence of the last valid destination.
-- [ ] `CP-007` Implement cleanup option model and defaults for the four approved paths.
-- [ ] `CP-008` Implement cleanup execution and cleanup-result reporting.
-- [ ] `CP-009` Define backup archive layout and `backup_manifest.json` schema.
-- [ ] `CP-010` Implement backup file walk, filtering, and zip creation with compression level 6.
-- [ ] `CP-011` Implement backup progress reporting and success/failure summaries.
-- [ ] `CP-012` Implement restore archive selection and archive validation.
-- [ ] `CP-013` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
-- [ ] `CP-014` Implement staged restore payload extraction and pending restore plan creation.
-- [ ] `CP-015` Implement startup detection of pending restore and replace-style restore apply.
-- [ ] `CP-016` Exclude this addon's own addon folder and addon_data folder from restore apply.
-- [ ] `CP-017` Implement fail-fast restore error handling and explicit restore-apply reporting.
-- [ ] `CP-018` Implement clear user messaging for staged restore preparation, required restart, and restore completion.
-- [ ] `CP-019` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
-- [ ] `CP-020` Package addon into an installable zip for GitHub distribution.
-- [ ] `CP-021` Write evergreen README with install and use instructions only.
-- [ ] `CP-022` Run targeted validation for backup flow on one desktop platform.
-- [ ] `CP-023` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
-- [ ] `CP-024` Run targeted validation for staged restore behavior and cross-platform warning messaging.
-- [ ] `CP-025` Prepare first release candidate and record known limitations.
+- [ ] `CP-007` Implement backup preflight checks for source readability, destination readiness, and basic free-space validation.
+- [ ] `CP-008` Implement cleanup option model and defaults for the four approved paths.
+- [ ] `CP-009` Implement cleanup execution and cleanup-result reporting.
+- [ ] `CP-010` Define backup archive layout and `backup_manifest.json` schema.
+- [ ] `CP-011` Implement backup file walk, filtering, and zip creation with compression level 6.
+- [ ] `CP-012` Implement backup progress reporting and success/failure summaries.
+- [ ] `CP-013` Implement restore archive selection and archive validation.
+- [ ] `CP-014` Implement restore preflight checks for archive readability, manifest validity, staging readiness, and basic free-space validation.
+- [ ] `CP-015` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
+- [ ] `CP-016` Implement staged restore payload extraction and pending restore plan creation.
+- [ ] `CP-017` Implement startup detection of pending restore and replace-style restore apply.
+- [ ] `CP-018` Exclude this addon's own addon folder and addon_data folder from restore apply.
+- [ ] `CP-019` Implement fail-fast restore error handling and explicit restore-apply reporting.
+- [ ] `CP-020` Implement clear user messaging for staged restore preparation, required restart, and restore completion.
+- [ ] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
+- [ ] `CP-022` Package addon into an installable zip for GitHub distribution.
+- [ ] `CP-023` Write evergreen README with install and use instructions only.
+- [ ] `CP-024` Run targeted validation for backup flow on one desktop platform.
+- [ ] `CP-025` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
+- [ ] `CP-026` Run targeted validation for staged restore behavior and cross-platform warning messaging.
+- [ ] `CP-027` Prepare first release candidate and record known limitations.
 
 ## Current Status
 
@@ -608,6 +648,7 @@ Open items to resolve before implementation starts:
 - Updated restore architecture to staged apply with self-exclusion for this addon
 - Updated destination behavior to remember the last valid selected location
 - Locked addon id, minimum Kodi target, desktop destination defaults, and staging path
+- Added explicit backup and restore preflight checks to the implementation plan
 
 ## Session Handoff
 
