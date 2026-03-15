@@ -1,7 +1,12 @@
 import xbmcgui
 
 from resources.lib.backup_preflight import BackupPreflightError, run_backup_preflight
-from resources.lib.cleanup import build_cleanup_selections, format_cleanup_selections
+from resources.lib.cleanup import (
+    CleanupError,
+    build_cleanup_selections,
+    format_cleanup_selections,
+    run_cleanup,
+)
 from resources.lib.destination import DestinationError, save_selected_backup_destination
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
@@ -115,12 +120,27 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 )
                 return
 
+            try:
+                cleanup_results = run_cleanup(self._cleanup_selections)
+            except CleanupError as exc:
+                xbmcgui.Dialog().ok(
+                    self._addon_name,
+                    "Cleanup failed.",
+                    str(exc),
+                    "Backup did not start.",
+                )
+                return
+
+            removed_count = sum(1 for item in cleanup_results if item["status"] == "removed")
+            skipped_count = sum(1 for item in cleanup_results if item["status"] == "skipped")
+
             xbmcgui.Dialog().ok(
                 self._addon_name,
                 "Backup is not implemented yet.",
                 f"Destination: {preflight['destination_path']}",
                 f"Files ready: {preflight['file_count']}",
-                f"Cleanup selected: {sum(1 for item in self._cleanup_selections if item['selected'])}",
+                f"Cleanup removed: {removed_count}",
+                f"Cleanup skipped: {skipped_count}",
             )
             return
         elif control_id == CONTROL_ID_RESTORE:

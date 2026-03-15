@@ -596,7 +596,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-006` Implement browse/select destination flow and persistence of the last valid destination.
 - [x] `CP-007` Implement backup preflight checks for source readability, destination readiness, and basic free-space validation.
 - [x] `CP-008` Implement cleanup option model and defaults for the four approved paths.
-- [ ] `CP-009` Implement cleanup execution and cleanup-result reporting.
+- [x] `CP-009` Implement cleanup execution and cleanup-result reporting.
 - [ ] `CP-010` Define backup archive layout and `backup_manifest.json` schema.
 - [ ] `CP-011` Implement backup file walk, filtering, and zip creation with compression level 6.
 - [ ] `CP-012` Implement backup progress reporting and success/failure summaries.
@@ -668,6 +668,9 @@ Open items to resolve before implementation starts:
 - `CP-008`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_preflight.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_backup_preflight_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
 - `CP-008`: exercised cleanup target defaults and resolved paths with `python3 tests/manual_cleanup_model_check.py`
 - `CP-008`: re-ran preflight, destination, persistence, path, and UI regression checks with `python3 tests/manual_backup_preflight_check.py`, `python3 tests/manual_destination_check.py`, `python3 tests/manual_destination_persistence_check.py`, `python3 tests/manual_path_resolution_check.py`, and `python3 tests/manual_ui_asset_check.py`
+- `CP-009`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_preflight.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_backup_preflight_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
+- `CP-009`: exercised cleanup execution, missing-path skip behavior, and delete-failure handling with `python3 tests/manual_cleanup_execution_check.py`
+- `CP-009`: re-ran cleanup model, preflight, destination, persistence, path, and UI regression checks with `python3 tests/manual_cleanup_model_check.py`, `python3 tests/manual_backup_preflight_check.py`, `python3 tests/manual_destination_check.py`, `python3 tests/manual_destination_persistence_check.py`, `python3 tests/manual_path_resolution_check.py`, and `python3 tests/manual_ui_asset_check.py`
 
 ## Change Log
 
@@ -688,6 +691,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-006` with browse-based destination selection, persistence of validated user choices, and active destination state display
 - Completed `CP-007` with backup preflight checks for source readability, destination readiness, recursive size estimation, and free-space validation
 - Completed `CP-008` with the approved cleanup target model, default selections, resolved cleanup paths, and cleanup summary display in the main window
+- Completed `CP-009` with cleanup execution, skip reporting for missing targets, fail-fast cleanup errors, and cleanup result summaries in the backup flow
 
 ## Session Handoff
 
@@ -701,14 +705,15 @@ Latest state:
 - `CP-006` is complete
 - `CP-007` is complete
 - `CP-008` is complete
-- Backup now carries explicit default cleanup selections alongside the existing preflight path
-- Compile, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- `CP-009` is complete
+- Backup now runs cleanup after preflight and reports removed versus skipped cleanup targets before the placeholder backup step
+- Compile, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-009` cleanup execution and result reporting using the cleanup selections already modeled in the main window.
-2. Keep cleanup execution limited to the four approved targets and report missing paths as skipped rather than failures.
-3. Reuse the existing backup preflight gate before backup proceeds, and avoid reopening product-scope questions unless implementation exposes a real blocker.
+1. Start `CP-010` backup archive layout and `backup_manifest.json` schema definition.
+2. Follow with `CP-011` zip file walk and archive creation, carrying forward the cleanup selections and cleanup results into backup metadata.
+3. Avoid reopening product-scope questions unless implementation exposes a real blocker.
 
 Constraints to keep in view:
 

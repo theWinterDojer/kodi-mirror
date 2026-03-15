@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 CLEANUP_TARGETS = (
@@ -33,6 +34,10 @@ CLEANUP_TARGETS = (
 )
 
 
+class CleanupError(RuntimeError):
+    pass
+
+
 def build_cleanup_selections(runtime_paths):
     selections = []
     for target in CLEANUP_TARGETS:
@@ -53,3 +58,39 @@ def format_cleanup_selections(selections):
         f"[{'x' if selection['selected'] else ' '}] {selection['label']}"
         for selection in selections
     ]
+
+
+def run_cleanup(selections):
+    results = []
+
+    for selection in selections:
+        if not selection["selected"]:
+            continue
+
+        target_path = selection["path"]
+        if not os.path.exists(target_path):
+            results.append(
+                {
+                    "id": selection["id"],
+                    "label": selection["label"],
+                    "path": target_path,
+                    "status": "skipped",
+                }
+            )
+            continue
+
+        try:
+            shutil.rmtree(target_path)
+        except OSError as exc:
+            raise CleanupError(f"Could not remove cleanup target: {target_path} ({exc})")
+
+        results.append(
+            {
+                "id": selection["id"],
+                "label": selection["label"],
+                "path": target_path,
+                "status": "removed",
+            }
+        )
+
+    return results
