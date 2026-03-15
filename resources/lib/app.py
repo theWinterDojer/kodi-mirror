@@ -2,6 +2,7 @@ import xbmcaddon
 import xbmcgui
 
 from resources.lib import log
+from resources.lib.paths import PathResolutionError, format_runtime_paths, resolve_runtime_paths
 
 
 def run():
@@ -10,8 +11,15 @@ def run():
     addon_version = addon.getAddonInfo("version")
 
     log.info(f"Launching {addon_name} {addon_version}")
+    try:
+        runtime_paths = resolve_runtime_paths()
+    except PathResolutionError as exc:
+        log.error(str(exc))
+        xbmcgui.Dialog().ok(addon_name, "Startup failed.", str(exc))
+        return
+
     xbmcgui.Dialog().ok(
         addon_name,
-        "Backup and restore are not implemented yet.",
-        "Baseline addon skeleton is in place.",
+        "Runtime paths resolved.",
+        *format_runtime_paths(runtime_paths),
     )

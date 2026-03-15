@@ -1,2 +1,7 @@
 ADDON_ID = "script.kodi.mirror"
 SETTING_BACKUP_DESTINATION = "backup_destination"
+RESTORE_STAGING_PATH = "special://profile/addon_data/script.kodi.mirror/pending_restore/"
+SPECIAL_HOME_PATH = "special://home/"
+SPECIAL_MASTERPROFILE_PATH = "special://masterprofile/"
+SPECIAL_USERDATA_PATH = "special://home/userdata/"
+SPECIAL_ADDONS_PATH = "special://home/addons/"
