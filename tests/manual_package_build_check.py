@@ -22,10 +22,15 @@ def main():
 
         with zipfile.ZipFile(archive_path, "r") as archive:
             names = set(archive.namelist())
-            assert "addon.xml" in names
-            assert "addon.py" in names
-            assert "resources/lib/app.py" in names
-            assert "resources/skins/default/1080i/script-kodi-mirror-main.xml" in names
+            root_entries = {name.split("/", 1)[0] for name in names}
+            assert root_entries == {"script.kodi.mirror"}
+            assert "script.kodi.mirror/addon.xml" in names
+            assert "script.kodi.mirror/addon.py" in names
+            assert "script.kodi.mirror/resources/lib/app.py" in names
+            assert (
+                "script.kodi.mirror/resources/skins/default/1080i/script-kodi-mirror-main.xml"
+                in names
+            )
             assert "docs/progress.md" not in names
             assert "tests/manual_package_build_check.py" not in names
             assert "addon_repo.xml" not in names

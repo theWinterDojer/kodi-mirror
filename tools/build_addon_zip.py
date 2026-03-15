@@ -75,7 +75,8 @@ def build_addon_zip(output_dir):
             compresslevel=6,
         ) as archive:
             for source_path, archive_path_name in _iter_package_files():
-                archive.write(source_path, archive_path_name)
+                packaged_path = f"{metadata['id']}/{archive_path_name}"
+                archive.write(source_path, packaged_path)
     except OSError as exc:
         raise PackageBuildError(f"Could not build addon zip: {archive_path} ({exc})")
     except zipfile.BadZipFile as exc:

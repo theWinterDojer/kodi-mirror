@@ -70,7 +70,7 @@ Implementation defaults locked for v1:
 - initial addon version: `0.1.0`
 - addon type: Kodi script addon
 - minimum target: Kodi 20+
-- packaging format: Kodi addon zip with `addon.xml` at archive root
+- packaging format: Kodi addon zip containing a top-level `script.kodi.mirror/` folder with `addon.xml` inside it
 - restore staging path: `special://profile/addon_data/script.kodi.mirror/pending_restore/`
 
 ### Source Path Strategy
@@ -628,7 +628,7 @@ Current decisions already made:
 - Use addon id `script.kodi.mirror`
 - Use initial addon version `0.1.0`
 - Target Kodi 20+
-- Package the addon as a Kodi zip with `addon.xml` at the archive root
+- Package the addon as a Kodi zip containing a top-level `script.kodi.mirror/` folder with `addon.xml` inside it
 - Back up active `userdata/` and `addons/`
 - Allow full restore across platforms with warning
 - Use `/storage/emulated/0/Backup` as the Android / Fire TV default destination
@@ -706,7 +706,8 @@ Open items to resolve before implementation starts:
 - `CP-021`: validated the main XML window asset after layout and color-hierarchy changes with `python3 tests/manual_ui_asset_check.py`
 - `CP-022`: compiled the packaging script and package validation check with `python3 -m py_compile tools/build_addon_zip.py tests/manual_package_build_check.py`
 - `CP-022`: built the installable addon zip with `python3 tools/build_addon_zip.py`
-- `CP-022`: validated package naming, archive-root layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `CP-022`: validated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `CP-022`: confirmed the corrected package layout after a real Kodi install failure against the root-file zip shape
 
 ## Change Log
 
@@ -740,7 +741,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-019` with fail-fast restore-apply error classification by stage/path, preserved pending staging on apply failure, and clearer startup failure reporting
 - Completed `CP-020` with shorter operational user messaging for restore preparation, restart-required apply, restore completion, and restore-apply failure states
 - Completed `CP-021` with a stronger black / blue / white XML layout, a clearer action rail, and more scannable status panels for remote-first use
-- Completed `CP-022` with a reusable addon-zip packaging script and a built `dist/script.kodi.mirror-0.1.0.zip` artifact ready for manual Kodi zip installation
+- Completed `CP-022` with a reusable addon-zip packaging script and a built `dist/script.kodi.mirror-0.1.0.zip` artifact using the Kodi-required top-level addon-folder layout for manual zip installation
 
 ## Session Handoff
 
@@ -778,7 +779,7 @@ Latest state:
 - Restore apply failures now report the failing step and path more explicitly, and staged restore content remains in place after an apply failure for later inspection or retry
 - Restore preparation, restart-required apply, restore completion, and restore-apply failure dialogs now use shorter operational wording aligned with the product messaging constraints
 - The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling while preserving the existing workflow and control ids
-- Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with `addon.xml` at archive root and only the actual addon payload included
+- Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with a top-level `script.kodi.mirror/` folder, `addon.xml` inside that folder, and only the actual addon payload included
 - Compile, restore apply, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
