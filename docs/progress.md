@@ -601,7 +601,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-011` Implement backup file walk, filtering, and zip creation with compression level 6.
 - [x] `CP-012` Implement backup progress reporting and success/failure summaries.
 - [x] `CP-013` Implement restore archive selection and archive validation.
-- [ ] `CP-014` Implement restore preflight checks for archive readability, manifest validity, staging readiness, and basic free-space validation.
+- [x] `CP-014` Implement restore preflight checks for archive readability, manifest validity, staging readiness, and basic free-space validation.
 - [ ] `CP-015` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
 - [ ] `CP-016` Implement staged restore payload extraction and pending restore plan creation.
 - [ ] `CP-017` Implement startup detection of pending restore and replace-style restore apply.
@@ -683,6 +683,9 @@ Open items to resolve before implementation starts:
 - `CP-013`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py resources/lib/restore_archive.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_backup_progress_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_restore_archive_check.py tests/manual_ui_asset_check.py`
 - `CP-013`: exercised restore archive validation success and unsupported-archive failures with `python3 tests/manual_restore_archive_check.py`
 - `CP-013`: re-ran backup archive and manifest regression checks with `python3 tests/manual_backup_archive_check.py` and `python3 tests/manual_backup_manifest_check.py`
+- `CP-014`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py resources/lib/restore_archive.py resources/lib/restore_preflight.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_backup_progress_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_restore_archive_check.py tests/manual_restore_preflight_check.py tests/manual_ui_asset_check.py`
+- `CP-014`: exercised restore preflight success, invalid-manifest failure, missing-root failure, and low-free-space failure with `python3 tests/manual_restore_preflight_check.py`
+- `CP-014`: re-ran restore archive and backup archive-contract regression checks with `python3 tests/manual_restore_archive_check.py`, `python3 tests/manual_backup_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
 
 ## Change Log
 
@@ -708,6 +711,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-011` with recursive backup file walk, ZIP archive creation at compression level 6, manifest writing at archive root, and real backup output from the main workflow
 - Completed `CP-012` with stage-based backup progress reporting and clearer success/failure summaries around the existing backup workflow
 - Completed `CP-013` with ZIP archive selection from the main UI, restore archive validation against the current backup contract, and explicit unsupported-archive messaging
+- Completed `CP-014` with restore preflight checks for manifest JSON validity, required restore roots, staging-directory readiness, and free-space validation before restore staging
 
 ## Session Handoff
 
@@ -726,15 +730,17 @@ Latest state:
 - `CP-011` is complete
 - `CP-012` is complete
 - `CP-013` is complete
+- `CP-014` is complete
 - Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
 - Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
-- Compile, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- Restore now checks manifest JSON structure, required restore roots, staging-path creation/writability, and restore staging free space before any extraction work begins
+- Compile, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-014` restore preflight checks for archive readability, manifest validity, staging readiness, and free-space validation.
-2. Build on the existing restore archive validator instead of introducing alternate restore formats or compatibility paths.
-3. Keep manifest parsing and warning behavior scoped to `CP-015` unless `CP-014` exposes a real blocker.
+1. Start `CP-015` manifest parsing and restore warning logic for platform-family and Kodi-version mismatch.
+2. Reuse the validated manifest from restore preflight instead of introducing alternate restore formats or compatibility paths.
+3. Keep extraction and pending-plan creation scoped to `CP-016` unless `CP-015` exposes a real blocker.
 
 Constraints to keep in view:
 

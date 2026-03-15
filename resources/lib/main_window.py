@@ -19,6 +19,7 @@ from resources.lib.cleanup import (
 )
 from resources.lib.destination import DestinationError, save_selected_backup_destination
 from resources.lib.restore_archive import RestoreArchiveError, validate_restore_archive
+from resources.lib.restore_preflight import RestorePreflightError, run_restore_preflight
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
     CONTROL_ID_BACKUP_DESTINATION_PATH,
@@ -132,11 +133,23 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             )
             return
 
+        try:
+            preflight = run_restore_preflight(self._runtime_paths, archive_details)
+        except RestorePreflightError as exc:
+            xbmcgui.Dialog().ok(
+                self._addon_name,
+                "Restore cannot start.",
+                str(exc),
+                "Fix the reported issue and try again.",
+            )
+            return
+
         xbmcgui.Dialog().ok(
             self._addon_name,
-            "Restore archive ready.",
+            "Restore is ready to stage.",
             archive_details["path"],
             f"Archive entries: {archive_details['entry_count']}",
+            f"Staging path: {preflight['staging_path']}",
         )
 
     def onClick(self, control_id):
