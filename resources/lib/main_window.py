@@ -158,15 +158,14 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         dialog_lines = [
-            archive_details["path"],
-            f"Archive entries: {archive_details['entry_count']}",
-            f"Staging path: {preflight['staging_path']}",
+            "Restart Kodi to apply this restore.",
         ]
         if warning_result["warnings"]:
             dialog_lines.extend(warning_result["warnings"])
             dialog_lines.append("Restore can continue.")
             dialog_lines.append("Some addons may not work on this device.")
-            dialog_lines.append("Restart is required after staging.")
+        dialog_lines.append(f"Archive entries: {archive_details['entry_count']}")
+        dialog_lines.append(archive_details["path"])
 
         try:
             staged_restore = stage_restore_payload(self._runtime_paths, preflight)
@@ -182,8 +181,7 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             self._addon_name,
             "Restore prepared.",
             *dialog_lines,
-            f"Pending plan: {staged_restore['plan_path']}",
-            "Restart Kodi to apply this restore.",
+            f"Staged at: {preflight['staging_path']}",
         )
 
     def onClick(self, control_id):

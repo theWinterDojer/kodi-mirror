@@ -36,9 +36,10 @@ def run():
             xbmcgui.Dialog().ok(
                 addon_name,
                 "Restore apply failed.",
+                "Restore did not finish.",
                 f"Step: {format_restore_apply_stage(exc.stage)}",
                 str(exc),
-                "Staged restore is still pending.",
+                "Fix the issue and restart Kodi to retry.",
             )
             return
 
@@ -46,7 +47,7 @@ def run():
         xbmcgui.Dialog().ok(
             addon_name,
             "Restore complete.",
-            f"Archive: {restore_result['archive_path']}",
+            "Restore was applied after restart.",
             f"Files copied: {restore_result['copied_file_count']}",
             f"Paths removed: {restore_result['removed_path_count']}",
         )
