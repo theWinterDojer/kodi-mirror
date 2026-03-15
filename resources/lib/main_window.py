@@ -1,5 +1,6 @@
 import xbmcgui
 
+from resources.lib.backup_preflight import BackupPreflightError, run_backup_preflight
 from resources.lib.destination import DestinationError, save_selected_backup_destination
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
@@ -85,19 +86,25 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         if control_id == CONTROL_ID_BACKUP:
-            if not self._destination_state["is_ready"]:
+            try:
+                preflight = run_backup_preflight(
+                    self._runtime_paths,
+                    self._destination_state,
+                )
+            except BackupPreflightError as exc:
                 xbmcgui.Dialog().ok(
                     self._addon_name,
                     "Backup cannot start.",
-                    self._destination_state["error"],
-                    "Browse to a writable destination.",
+                    str(exc),
+                    "Fix the reported issue and try again.",
                 )
                 return
 
             xbmcgui.Dialog().ok(
                 self._addon_name,
                 "Backup is not implemented yet.",
-                f"Destination: {self._destination_state['path']}",
+                f"Destination: {preflight['destination_path']}",
+                f"Files ready: {preflight['file_count']}",
             )
             return
         elif control_id == CONTROL_ID_RESTORE:
