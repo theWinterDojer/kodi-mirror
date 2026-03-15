@@ -9,6 +9,7 @@ from resources.lib.backup_manifest import (
     BackupManifestError,
     build_backup_manifest,
 )
+from resources.lib.backup_progress import BackupProgress
 from resources.lib.backup_preflight import BackupPreflightError, run_backup_preflight
 from resources.lib.cleanup import (
     CleanupError,
@@ -115,12 +116,16 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         if control_id == CONTROL_ID_BACKUP:
+            progress = BackupProgress(xbmcgui.DialogProgress())
+            progress.start("Backup")
             try:
+                progress.update(10, "Checking backup paths.")
                 preflight = run_backup_preflight(
                     self._runtime_paths,
                     self._destination_state,
                 )
             except BackupPreflightError as exc:
+                progress.close()
                 xbmcgui.Dialog().ok(
                     self._addon_name,
                     "Backup cannot start.",
@@ -130,8 +135,10 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 return
 
             try:
+                progress.update(30, "Cleaning selected cache folders.")
                 cleanup_results = run_cleanup(self._cleanup_selections)
             except CleanupError as exc:
+                progress.close()
                 xbmcgui.Dialog().ok(
                     self._addon_name,
                     "Cleanup failed.",
@@ -144,7 +151,9 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             skipped_count = sum(1 for item in cleanup_results if item["status"] == "skipped")
 
             try:
+                progress.update(55, "Collecting files for backup.")
                 collected_entries = collect_backup_entries(self._runtime_paths)
+                progress.update(70, "Building backup manifest.")
                 manifest = build_backup_manifest(
                     addon_version=self._addon.getAddonInfo("version"),
                     runtime_paths=self._runtime_paths,
@@ -152,12 +161,14 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                     cleanup_selections=self._cleanup_selections,
                     cleanup_results=cleanup_results,
                 )
+                progress.update(85, "Writing backup archive.")
                 archive_path = create_backup_archive(
                     preflight["destination_path"],
                     collected_entries,
                     manifest,
                 )
             except (BackupArchiveError, BackupManifestError) as exc:
+                progress.close()
                 xbmcgui.Dialog().ok(
                     self._addon_name,
                     "Backup failed.",
@@ -165,11 +176,14 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 )
                 return
 
+            progress.update(100, "Backup complete.")
+            progress.close()
             xbmcgui.Dialog().ok(
                 self._addon_name,
                 "Backup complete.",
                 archive_path,
                 f"Files backed up: {manifest['file_count']}",
+                f"Bytes backed up: {manifest['uncompressed_byte_size']}",
                 f"Cleanup removed: {removed_count}",
                 f"Cleanup skipped: {skipped_count}",
             )

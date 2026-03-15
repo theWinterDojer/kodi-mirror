@@ -599,7 +599,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-009` Implement cleanup execution and cleanup-result reporting.
 - [x] `CP-010` Define backup archive layout and `backup_manifest.json` schema.
 - [x] `CP-011` Implement backup file walk, filtering, and zip creation with compression level 6.
-- [ ] `CP-012` Implement backup progress reporting and success/failure summaries.
+- [x] `CP-012` Implement backup progress reporting and success/failure summaries.
 - [ ] `CP-013` Implement restore archive selection and archive validation.
 - [ ] `CP-014` Implement restore preflight checks for archive readability, manifest validity, staging readiness, and basic free-space validation.
 - [ ] `CP-015` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
@@ -677,6 +677,9 @@ Open items to resolve before implementation starts:
 - `CP-011`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
 - `CP-011`: exercised archive structure, manifest placement, and backup filename format with `python3 tests/manual_backup_archive_check.py`
 - `CP-011`: re-ran manifest, cleanup execution, cleanup model, preflight, destination, persistence, path, and UI regression checks with `python3 tests/manual_backup_manifest_check.py`, `python3 tests/manual_cleanup_execution_check.py`, `python3 tests/manual_cleanup_model_check.py`, `python3 tests/manual_backup_preflight_check.py`, `python3 tests/manual_destination_check.py`, `python3 tests/manual_destination_persistence_check.py`, `python3 tests/manual_path_resolution_check.py`, and `python3 tests/manual_ui_asset_check.py`
+- `CP-012`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_backup_archive_check.py tests/manual_backup_manifest_check.py tests/manual_backup_preflight_check.py tests/manual_backup_progress_check.py tests/manual_cleanup_execution_check.py tests/manual_cleanup_model_check.py tests/manual_destination_check.py tests/manual_destination_persistence_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
+- `CP-012`: exercised backup progress dialog helper behavior with `python3 tests/manual_backup_progress_check.py`
+- `CP-012`: re-ran archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, path, and UI regression checks with `python3 tests/manual_backup_archive_check.py`, `python3 tests/manual_backup_manifest_check.py`, `python3 tests/manual_cleanup_execution_check.py`, `python3 tests/manual_cleanup_model_check.py`, `python3 tests/manual_backup_preflight_check.py`, `python3 tests/manual_destination_check.py`, `python3 tests/manual_destination_persistence_check.py`, `python3 tests/manual_path_resolution_check.py`, and `python3 tests/manual_ui_asset_check.py`
 
 ## Change Log
 
@@ -700,6 +703,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-009` with cleanup execution, skip reporting for missing targets, fail-fast cleanup errors, and cleanup result summaries in the backup flow
 - Completed `CP-010` with the `backup_manifest.json` archive contract, manifest schema builder, and manifest placeholder integration in the backup flow
 - Completed `CP-011` with recursive backup file walk, ZIP archive creation at compression level 6, manifest writing at archive root, and real backup output from the main workflow
+- Completed `CP-012` with stage-based backup progress reporting and clearer success/failure summaries around the existing backup workflow
 
 ## Session Handoff
 
@@ -716,13 +720,14 @@ Latest state:
 - `CP-009` is complete
 - `CP-010` is complete
 - `CP-011` is complete
-- Backup now creates a real ZIP archive with `userdata/`, `addons/`, and `backup_manifest.json`
-- Compile, archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- `CP-012` is complete
+- Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
+- Compile, progress, archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-012` backup progress reporting and success/failure summaries.
-2. Keep the archive creation path intact and add progress updates around preflight, cleanup, file walk, and zip write rather than introducing a second backup path.
+1. Start `CP-013` restore archive selection and archive validation.
+2. Reuse the archive contract already defined in backup work instead of introducing alternate restore formats or compatibility paths.
 3. Avoid reopening product-scope questions unless implementation exposes a real blocker.
 
 Constraints to keep in view:
