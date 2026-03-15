@@ -608,7 +608,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-018` Exclude this addon's own addon folder and addon_data folder from restore apply.
 - [x] `CP-019` Implement fail-fast restore error handling and explicit restore-apply reporting.
 - [x] `CP-020` Implement clear user messaging for staged restore preparation, required restart, and restore completion.
-- [ ] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
+- [x] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
 - [ ] `CP-022` Package addon into an installable zip for GitHub distribution.
 - [ ] `CP-023` Write evergreen README with install and use instructions only.
 - [ ] `CP-024` Run targeted validation for backup flow on one desktop platform.
@@ -703,6 +703,7 @@ Open items to resolve before implementation starts:
 - `CP-019`: re-ran restore apply success, restore staging, restore warning, restore preflight, restore archive, and backup manifest regressions with `python3 tests/manual_restore_apply_check.py`, `python3 tests/manual_restore_stage_check.py`, `python3 tests/manual_restore_warning_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
 - `CP-020`: compiled Python modules for restore message updates with `python3 -m py_compile resources/lib/main_window.py resources/lib/app.py`
 - `CP-020`: re-ran restore apply failure, restore apply success, restore staging, restore warning, restore preflight, restore archive, and backup manifest regressions with `python3 tests/manual_restore_apply_failure_check.py`, `python3 tests/manual_restore_apply_check.py`, `python3 tests/manual_restore_stage_check.py`, `python3 tests/manual_restore_warning_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_archive_check.py`, and `python3 tests/manual_backup_manifest_check.py`
+- `CP-021`: validated the main XML window asset after layout and color-hierarchy changes with `python3 tests/manual_ui_asset_check.py`
 
 ## Change Log
 
@@ -735,6 +736,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-018` with explicit restore-apply exclusion of this addon's live addon folder and addon_data folder while preserving replace semantics for all other paths
 - Completed `CP-019` with fail-fast restore-apply error classification by stage/path, preserved pending staging on apply failure, and clearer startup failure reporting
 - Completed `CP-020` with shorter operational user messaging for restore preparation, restart-required apply, restore completion, and restore-apply failure states
+- Completed `CP-021` with a stronger black / blue / white XML layout, a clearer action rail, and more scannable status panels for remote-first use
 
 ## Session Handoff
 
@@ -760,6 +762,7 @@ Latest state:
 - `CP-018` is complete
 - `CP-019` is complete
 - `CP-020` is complete
+- `CP-021` is complete
 - Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
 - Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
 - Restore now checks manifest JSON structure, required restore roots, staging-path creation/writability, and restore staging free space before any extraction work begins
@@ -769,13 +772,14 @@ Latest state:
 - Restore apply now skips this addon's live `addons/script.kodi.mirror/` and `userdata/addon_data/script.kodi.mirror/` trees so startup apply no longer self-overwrites the running addon
 - Restore apply failures now report the failing step and path more explicitly, and staged restore content remains in place after an apply failure for later inspection or retry
 - Restore preparation, restart-required apply, restore completion, and restore-apply failure dialogs now use shorter operational wording aligned with the product messaging constraints
+- The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling while preserving the existing workflow and control ids
 - Compile, restore apply, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-021` black / blue / white Kodi UI styling and remote-friendly layout polish.
-2. Preserve the current restore and backup behaviors while refining presentation instead of introducing alternate workflows or compatibility paths.
-3. Keep packaging and README work scoped to `CP-022` and `CP-023` unless `CP-021` exposes a real blocker.
+1. Start `CP-022` package the addon into an installable zip for GitHub distribution.
+2. Preserve the current addon-root packaging contract with `addon.xml` at archive root instead of introducing alternate packaging paths.
+3. Keep README work scoped to `CP-023` unless `CP-022` exposes a real blocker.
 
 Constraints to keep in view:
 
