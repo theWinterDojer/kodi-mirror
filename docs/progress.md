@@ -592,7 +592,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-002` Create addon skeleton with `addon.xml`, entrypoint, and base module layout.
 - [x] `CP-003` Implement runtime path resolution using Kodi special paths for source roots.
 - [x] `CP-004` Decide and implement main UI structure: primary XML window plus supporting dialogs.
-- [ ] `CP-005` Define destination path policy by platform and implement writability checks.
+- [x] `CP-005` Define destination path policy by platform and implement writability checks.
 - [ ] `CP-006` Implement browse/select destination flow and persistence of the last valid destination.
 - [ ] `CP-007` Implement backup preflight checks for source readability, destination readiness, and basic free-space validation.
 - [ ] `CP-008` Implement cleanup option model and defaults for the four approved paths.
@@ -620,7 +620,7 @@ Priority order below should be followed unless a blocker forces reordering.
 
 Current phase:
 
-- Phase 1: Addon Skeleton and Foundation
+- Phase 2: Destination and Settings Handling
 
 Current decisions already made:
 
@@ -656,6 +656,9 @@ Open items to resolve before implementation starts:
 - `CP-003`: exercised path resolution with a stubbed Kodi runtime via `python3 tests/manual_path_resolution_check.py`
 - `CP-004`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/constants.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
 - `CP-004`: verified main window XML asset with `python3 tests/manual_ui_asset_check.py`
+- `CP-005`: compiled Python modules with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/constants.py resources/lib/destination.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py tests/manual_destination_check.py tests/manual_path_resolution_check.py tests/manual_ui_asset_check.py`
+- `CP-005`: exercised default destination policy and writability checks with `python3 tests/manual_destination_check.py`
+- `CP-005`: re-ran path and UI regression checks with `python3 tests/manual_path_resolution_check.py` and `python3 tests/manual_ui_asset_check.py`
 
 ## Change Log
 
@@ -672,6 +675,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-002` with a runnable addon bootstrap and base `resources/lib` module layout
 - Completed `CP-003` with Kodi special-path runtime resolution for source roots and restore staging
 - Completed `CP-004` with the primary XML-backed main window and supporting placeholder dialogs
+- Completed `CP-005` with platform default backup destination resolution, directory creation, writability probes, and main-window status display
 
 ## Session Handoff
 
@@ -681,13 +685,14 @@ Latest state:
 - `CP-002` is complete
 - `CP-003` is complete
 - `CP-004` is complete
-- Normal launch now opens the primary XML-backed main window
-- Compile and XML asset validation have been recorded in the QA ledger
+- `CP-005` is complete
+- Normal launch now opens the primary XML-backed main window with default backup destination status
+- Compile, destination, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-005` destination default-path policy and writability checks.
-2. Continue with `CP-006` browse/select destination flow and persistence of the last valid destination.
+1. Start `CP-006` browse/select destination flow and persistence of the last valid destination.
+2. Use the new destination validation path in `CP-007` backup preflight work instead of adding a parallel check path.
 3. Avoid reopening product-scope questions unless implementation exposes a real blocker.
 
 Constraints to keep in view:

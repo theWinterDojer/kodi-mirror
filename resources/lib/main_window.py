@@ -2,6 +2,8 @@ import xbmcgui
 
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
+    CONTROL_ID_BACKUP_DESTINATION_PATH,
+    CONTROL_ID_BACKUP_DESTINATION_STATUS,
     CONTROL_ID_BACKUP,
     CONTROL_ID_CLOSE,
     CONTROL_ID_RESTORE,
@@ -16,11 +18,19 @@ from resources.lib.constants import (
 class MainWindow(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self._addon_name = kwargs["addon_name"]
+        self._destination_state = kwargs["destination_state"]
         self._runtime_paths = kwargs["runtime_paths"]
 
     def onInit(self):
         self.getControl(CONTROL_ID_USERDATA_PATH).setText(self._runtime_paths["userdata"])
         self.getControl(CONTROL_ID_ADDONS_PATH).setText(self._runtime_paths["addons"])
+        self.getControl(CONTROL_ID_BACKUP_DESTINATION_PATH).setText(
+            self._destination_state["path"] or "No default destination available."
+        )
+        destination_status = "Ready"
+        if not self._destination_state["is_ready"]:
+            destination_status = self._destination_state["error"]
+        self.getControl(CONTROL_ID_BACKUP_DESTINATION_STATUS).setLabel(destination_status)
         self.setFocusId(CONTROL_ID_BACKUP)
 
     def onClick(self, control_id):
@@ -29,7 +39,20 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         if control_id == CONTROL_ID_BACKUP:
-            heading = "Backup"
+            if not self._destination_state["is_ready"]:
+                xbmcgui.Dialog().ok(
+                    self._addon_name,
+                    "Backup cannot start.",
+                    self._destination_state["error"],
+                )
+                return
+
+            xbmcgui.Dialog().ok(
+                self._addon_name,
+                "Backup is not implemented yet.",
+                f"Default destination: {self._destination_state['path']}",
+            )
+            return
         elif control_id == CONTROL_ID_RESTORE:
             heading = "Restore"
         elif control_id == CONTROL_ID_SETTINGS:
@@ -50,13 +73,14 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         super().onAction(action)
 
 
-def open_main_window(addon_path, addon_name, runtime_paths):
+def open_main_window(addon_path, addon_name, runtime_paths, destination_state):
     window = MainWindow(
         MAIN_WINDOW_XML,
         addon_path,
         MAIN_WINDOW_SKIN,
         MAIN_WINDOW_RESOLUTION,
         addon_name=addon_name,
+        destination_state=destination_state,
         runtime_paths=runtime_paths,
     )
     window.doModal()
