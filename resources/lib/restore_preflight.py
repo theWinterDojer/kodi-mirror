@@ -1,13 +1,11 @@
 import json
 import os
-import shutil
 import tempfile
 import zipfile
 
 from resources.lib.constants import ARCHIVE_MANIFEST_NAME
 
 
-FREE_SPACE_BUFFER_BYTES = 64 * 1024 * 1024
 REQUIRED_ARCHIVE_ROOTS = ("userdata", "addons")
 
 
@@ -64,67 +62,46 @@ def _read_restore_manifest(archive_path):
     return manifest, archive_infos
 
 
-def _ensure_staging_directory(staging_path):
-    staging_path = os.path.normpath(staging_path)
+def _ensure_live_target_root(path, label):
+    path = os.path.normpath(path)
+    if os.path.exists(path) and not os.path.isdir(path):
+        raise RestorePreflightError(f"Restore target {label} is not a directory: {path}")
+
     try:
-        os.makedirs(staging_path, exist_ok=True)
+        os.makedirs(path, exist_ok=True)
     except OSError as exc:
         raise RestorePreflightError(
-            f"Restore staging directory could not be created: {staging_path} ({exc})"
+            f"Restore target {label} could not be created: {path} ({exc})"
         )
 
-    if not os.path.isdir(staging_path):
-        raise RestorePreflightError(
-            f"Restore staging path is not a directory: {staging_path}"
-        )
-
-    if not os.access(staging_path, os.W_OK | os.X_OK):
-        raise RestorePreflightError(
-            f"Restore staging directory is not writable: {staging_path}"
-        )
+    if not os.access(path, os.W_OK | os.X_OK):
+        raise RestorePreflightError(f"Restore target {label} is not writable: {path}")
 
     try:
-        with tempfile.NamedTemporaryFile(dir=staging_path, delete=True) as handle:
+        with tempfile.NamedTemporaryFile(dir=path, delete=True) as handle:
             handle.write(b"ok")
             handle.flush()
     except OSError as exc:
         raise RestorePreflightError(
-            f"Restore staging directory is not writable: {staging_path} ({exc})"
+            f"Restore target {label} is not writable: {path} ({exc})"
         )
 
-    return staging_path
+    return path
 
 
-def run_restore_preflight(
-    runtime_paths,
-    archive_details,
-    disk_usage=shutil.disk_usage,
-    safety_buffer_bytes=FREE_SPACE_BUFFER_BYTES,
-):
+def run_restore_preflight(runtime_paths, archive_details):
     archive_path = archive_details["path"]
     manifest, archive_infos = _read_restore_manifest(archive_path)
-    staging_path = _ensure_staging_directory(runtime_paths["restore_staging"])
-
+    target_root_paths = {
+        root_name: _ensure_live_target_root(runtime_paths[root_name], root_name)
+        for root_name in REQUIRED_ARCHIVE_ROOTS
+    }
     archive_bytes = sum(info.file_size for info in archive_infos)
-    required_bytes = archive_bytes + safety_buffer_bytes
-
-    try:
-        free_bytes = disk_usage(staging_path).free
-    except OSError as exc:
-        raise RestorePreflightError(
-            f"Could not read restore staging free space: {staging_path} ({exc})"
-        )
-
-    if free_bytes < required_bytes:
-        raise RestorePreflightError(
-            f"Not enough free space at restore staging path: {staging_path}"
-        )
 
     return {
         "archive_path": archive_path,
         "manifest": manifest,
         "archive_bytes": archive_bytes,
-        "free_bytes": free_bytes,
-        "required_bytes": required_bytes,
-        "staging_path": staging_path,
+        "entry_count": len(archive_infos),
+        "target_root_paths": target_root_paths,
     }

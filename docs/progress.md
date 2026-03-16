@@ -6,7 +6,7 @@ Last updated: 2026-03-16
 
 This project is a Kodi-native Python addon that provides a simple, remote-friendly backup and restore workflow for Kodi users.
 
-The addon is intended to replace confusing backup solutions with a direct "clone-style" tool that backs up the active Kodi installation state by packaging the active `userdata/` and `addons/` directories, with optional cleanup of selected cache folders before compression. Restore uses staged, replace-style apply semantics so the restored Kodi state matches the backup as closely as possible while excluding this backup addon from self-overwrite.
+The addon is intended to replace confusing backup solutions with a direct "clone-style" tool that backs up the active Kodi installation state by packaging the active `userdata/` and `addons/` directories, with optional cleanup of selected cache folders before compression. Restore now uses a best-effort live apply workflow that overwrites restorable files in `userdata/` and `addons/`, skips locked or unwritable files, and reports what could not be replaced while Kodi is running.
 
 Primary product goals:
 
@@ -71,7 +71,7 @@ Implementation defaults locked for v1:
 - addon type: Kodi script addon
 - minimum target: Kodi 20+
 - packaging format: Kodi addon zip containing a top-level `script.kodi.mirror/` folder with `addon.xml` inside it
-- restore staging path: `special://profile/addon_data/script.kodi.mirror/pending_restore/`
+- restore mode: best-effort live restore while KodiMirror is running
 
 ### Source Path Strategy
 
@@ -144,10 +144,9 @@ Restore flow:
 1. Open restore screen.
 2. Browse for backup archive.
 3. Read metadata and validate archive.
-4. Warn if platform family or Kodi major version differs.
-5. Confirm staged replace restore.
-6. Stage restore data and tell the user a restart is required.
-7. After restart, apply restore and show summary.
+4. If needed, show warnings when platform family or Kodi major version differs.
+5. Apply the restore directly while KodiMirror is running.
+6. Show a completion summary with restored and skipped files.
 
 Settings flow:
 
@@ -162,7 +161,7 @@ Current preferred approach:
 
 - One primary XML-backed window for the main workflow
 - Dialogs only for confirmations, file browsing, and final results
-- Progress dialog during backup and restore
+- Progress dialog during backup and live restore
 
 ## Backup Model
 
@@ -279,35 +278,32 @@ Warning language should state:
 
 - restore will continue
 - some addons may not work on the target device
-- Kodi restart is required to apply the staged restore
+- some files may stay unchanged if Kodi is using them
 
 ### Restore Safety Requirements
 
 - Validate that the selected file is a supported backup archive
 - Validate the presence and format of `backup_manifest.json`
 - Protect against path traversal in archive entries
-- Refuse to extract entries outside the intended Kodi destination
-- Surface file copy failures clearly
-- Do not perform live in-place restore of active Kodi roots
-- Stage restore payload before apply
-- Exclude this backup addon from restore apply so the running restore mechanism does not overwrite itself
+- Refuse to copy entries outside the intended Kodi destination
+- Exclude this backup addon from live restore so the running addon does not overwrite itself
+- Skip locked or unwritable files and report them clearly
+- Do not delete the live `userdata/` or `addons/` roots before restore while Kodi is running
 
 ### Restore Preflight Checks
 
-Before restore staging starts, the addon should verify:
+Before live restore starts, the addon should verify:
 
 - selected archive exists and is readable
 - archive format is supported
 - `backup_manifest.json` exists and parses successfully
-- staging directory exists or can be created
-- staging directory is writable
-- enough free space is available for staged extraction and restore apply preparation
+- live target roots exist or can be created
+- live target roots are writable at the root level
 
 Behavior:
 
-- fail before staging if a required preflight check fails
+- fail before live restore if a required preflight check fails
 - show a short, explicit message describing the failure
-- do not ask the user to restart Kodi unless staging completed successfully
 
 ### Restore Behavior
 
@@ -318,12 +314,11 @@ Restore target roots:
 
 Behavior:
 
-- restore is staged first, not applied live
-- apply restore with replace semantics for `userdata/` and `addons/`
-- remove target files that are not present in the backup, except explicit self-exclusions for this addon
-- fail fast if restore apply encounters a write/delete error that prevents a correct result
-- report failures explicitly
-- prompt the user to restart Kodi after staging so the restore can be applied
+- restore is applied live from the selected backup zip while KodiMirror is running
+- overwrite files and create directories where possible for `userdata/` and `addons/`
+- do not delete files that are absent from the backup during live restore
+- skip files or directories that cannot be replaced because they are locked, unwritable, or otherwise unavailable
+- report restored and skipped results explicitly
 
 Restore self-exclusions:
 
@@ -334,17 +329,14 @@ Restore flow detail:
 
 1. User selects a backup zip.
 2. Addon validates the archive and reads `backup_manifest.json`.
-3. Addon stages restore content into a writable staging area.
-4. Addon writes a pending restore plan describing staged source and intended targets.
-5. Addon clearly tells the user that restore is prepared but not yet applied.
-6. User restarts Kodi.
-7. On next startup of this addon, pending restore is detected before normal UI flow.
-8. Addon applies the staged replace restore, skipping this addon's own files.
-9. Addon clears staged restore state and shows success or failure.
+3. Addon warns on platform or Kodi-version mismatch.
+4. If warnings are shown, the user acknowledges them and restore continues.
+5. Addon applies the restore directly into live `userdata/` and `addons/`, skipping this addon's own files.
+6. Addon shows a summary with restored and skipped counts plus a short skipped-file sample.
 
 Known limitation:
 
-The restored installation is intentionally not a perfect byte-for-byte clone because this backup addon excludes its own files from restore apply so the restore mechanism remains stable.
+Live restore is best-effort while Kodi is running. Locked files such as active addon binaries may remain unchanged and are reported as skipped instead of causing a full restore stop.
 
 ## Permissions and Platform Notes
 
@@ -421,7 +413,7 @@ Expected repo contents:
 ### Known Risks
 
 - Some Android / Fire TV environments may restrict destination access more than expected.
-- A staged restore still depends on being able to complete the apply step successfully after restart.
+- A live restore can skip files that Kodi keeps open while the application is running.
 - Restoring platform-specific addons to another platform may produce broken addons after restore.
 - Large backups may take long enough that progress reporting needs to be carefully designed to avoid the appearance of hanging.
 
@@ -534,18 +526,18 @@ Deliverables:
 - archive validation
 - manifest parsing
 - warning logic for platform family and Kodi major mismatch
-- restore preflight checks for archive readability, staging readiness, manifest validity, and basic free-space validation
-- staging of restore payload and pending restore plan
-- path-safe replace apply after restart
-- self-exclusion for this addon during apply
-- failure reporting and clear restart/apply messaging
+- restore preflight checks for archive readability, manifest validity, and live target-root readiness
+- path-safe live restore apply direct from the selected zip
+- self-exclusion for this addon during live restore
+- skip tracking for locked or unwritable files
+- failure reporting and clear live-restore completion messaging
 
 Definition of done:
 
 - restore fails early with a clear message if preflight fails
-- a valid backup can be staged and then applied into a test environment
+- a valid backup can be applied live into a test environment
 - unsafe archive entries are rejected
-- restore apply halts on critical write/delete failure and reports it clearly
+- locked or unwritable files are skipped and reported clearly without stopping the entire restore
 
 ### Phase 6: UI Polish
 
@@ -601,19 +593,19 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-011` Implement backup file walk, filtering, and zip creation with compression level 6.
 - [x] `CP-012` Implement backup progress reporting and success/failure summaries.
 - [x] `CP-013` Implement restore archive selection and archive validation.
-- [x] `CP-014` Implement restore preflight checks for archive readability, manifest validity, staging readiness, and basic free-space validation.
+- [x] `CP-014` Implement restore preflight checks for archive readability, manifest validity, and live target-root readiness.
 - [x] `CP-015` Implement manifest parsing and restore warning logic for platform/Kodi mismatch.
-- [x] `CP-016` Implement staged restore payload extraction and pending restore plan creation.
-- [x] `CP-017` Implement startup detection of pending restore and replace-style restore apply.
-- [x] `CP-018` Exclude this addon's own addon folder and addon_data folder from restore apply.
-- [x] `CP-019` Implement fail-fast restore error handling and explicit restore-apply reporting.
-- [x] `CP-020` Implement clear user messaging for staged restore preparation, required restart, and restore completion.
+- [x] `CP-016` Implement live restore archive iteration and direct file apply into `userdata/` and `addons/`.
+- [x] `CP-017` Implement overwrite-only live restore behavior without destructive full-root delete.
+- [x] `CP-018` Exclude this addon's own addon folder and addon_data folder from live restore.
+- [x] `CP-019` Implement skip/report handling for locked or unwritable live-restore files.
+- [x] `CP-020` Implement clear user messaging for live restore warnings and completion.
 - [x] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
 - [x] `CP-022` Package addon into an installable zip for GitHub distribution.
 - [ ] `CP-023` Write evergreen README with install and use instructions only.
-- [ ] `CP-024` Run targeted validation for backup flow on one desktop platform.
+- [x] `CP-024` Run targeted validation for backup flow on one desktop platform.
 - [ ] `CP-025` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
-- [ ] `CP-026` Run targeted validation for staged restore behavior and cross-platform warning messaging.
+- [ ] `CP-026` Run targeted validation for live restore behavior and cross-platform warning messaging.
 - [ ] `CP-027` Prepare first release candidate and record known limitations.
 
 ## Current Status
@@ -636,9 +628,9 @@ Current decisions already made:
 - Use `$HOME/Backup` as the Linux and macOS default destination
 - Use explicit browse override plus persistence of the last valid destination
 - Use ZIP compression level 6
-- Use staged restore with restart-required apply
-- Use `special://profile/addon_data/script.kodi.mirror/pending_restore/` as the staged restore working path
-- Exclude this addon from restore apply to avoid self-overwrite during staged restore
+- Use best-effort live restore with overwrite-only semantics while KodiMirror is running
+- Skip and report locked or unwritable restore targets instead of failing the whole restore
+- Exclude this addon from live restore to avoid self-overwrite during the running operation
 
 Open items to resolve before implementation starts:
 
@@ -748,6 +740,53 @@ Open items to resolve before implementation starts:
 - `Backup interaction fix`: revalidated package layout after reducing the backup-complete dialog to a minimal summary via `python3 tests/manual_package_build_check.py`
 - `Live QA`: Windows testing confirmed the backup flow now runs through cleanup selection and backup execution, but the post-backup success summary still does not appear after completion
 - `Live QA`: Windows testing indicates restore still does not complete successfully and needs a dedicated bug-fix pass before broader validation
+- `Logging pass`: compiled targeted runtime modules with `python3 -m py_compile resources/lib/app.py resources/lib/log.py resources/lib/main_window.py resources/lib/restore_apply.py`
+- `Logging pass`: revalidated restore apply success and preserved plain-Python importability with `python3 tests/manual_restore_apply_check.py`
+- `Logging pass`: revalidated restore apply failure handling with `python3 tests/manual_restore_apply_failure_check.py`
+- `Windows fix pass`: compiled the updated backup, dialog, logging, restore-apply, and restore-stage modules with `python3 -m py_compile resources/lib/app.py resources/lib/dialog.py resources/lib/log.py resources/lib/main_window.py resources/lib/restore_apply.py resources/lib/restore_stage.py tests/manual_dialog_text_check.py tests/manual_restore_stage_windows_path_check.py`
+- `Windows fix pass`: validated dialog message composition with `python3 tests/manual_dialog_text_check.py`
+- `Windows fix pass`: validated Windows restore-stage path normalization with `python3 tests/manual_restore_stage_windows_path_check.py`
+- `Windows fix pass`: revalidated restore staging after Windows path handling changes with `python3 tests/manual_restore_stage_check.py`
+- `Windows fix pass`: revalidated restore apply success with `python3 tests/manual_restore_apply_check.py`
+- `Windows fix pass`: revalidated restore apply failure handling with `python3 tests/manual_restore_apply_failure_check.py`
+- `Windows fix pass`: rebuilt the addon package after the backup/restore crash fixes via `python3 tools/build_addon_zip.py`
+- `Windows fix pass`: revalidated package layout after the backup/restore crash fixes with `python3 tests/manual_package_build_check.py`
+- `Windows apply fix`: compiled the restore-apply module and Windows apply-path check with `python3 -m py_compile resources/lib/restore_apply.py tests/manual_restore_apply_windows_path_check.py`
+- `Windows apply fix`: validated Windows restore-apply path normalization with `python3 tests/manual_restore_apply_windows_path_check.py`
+- `Windows apply fix`: revalidated restore apply success with `python3 tests/manual_restore_apply_check.py`
+- `Windows apply fix`: revalidated restore apply failure handling with `python3 tests/manual_restore_apply_failure_check.py`
+- `Windows apply fix`: revalidated restore staging after the apply-path changes with `python3 tests/manual_restore_stage_check.py`
+- `Windows apply fix`: rebuilt the addon package after the restore-apply path fix via `python3 tools/build_addon_zip.py`
+- `Windows apply fix`: revalidated package layout after the restore-apply path fix with `python3 tests/manual_package_build_check.py`
+- `Startup unlock fix`: compiled the updated startup flow and staged-restore cleanup check with `python3 -m py_compile resources/lib/app.py resources/lib/restore_apply.py tests/manual_discard_pending_restore_check.py`
+- `Startup unlock fix`: validated staged-restore cleanup with `python3 tests/manual_discard_pending_restore_check.py`
+- `Startup unlock fix`: revalidated restore apply success with `python3 tests/manual_restore_apply_check.py`
+- `Startup unlock fix`: revalidated restore apply failure handling with `python3 tests/manual_restore_apply_failure_check.py`
+- `Startup unlock fix`: revalidated restore staging after the startup-flow changes with `python3 tests/manual_restore_stage_check.py`
+- `Startup unlock fix`: rebuilt the addon package after the startup unlock change via `python3 tools/build_addon_zip.py`
+- `Startup unlock fix`: revalidated package layout after the startup unlock change with `python3 tests/manual_package_build_check.py`
+- `Live restore cutover`: compiled the live-restore modules and replacement checks with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/backup_engine.py resources/lib/backup_manifest.py resources/lib/backup_preflight.py resources/lib/backup_progress.py resources/lib/cleanup.py resources/lib/constants.py resources/lib/destination.py resources/lib/dialog.py resources/lib/log.py resources/lib/main_window.py resources/lib/paths.py resources/lib/restore_archive.py resources/lib/restore_live.py resources/lib/restore_preflight.py resources/lib/restore_warning.py tests/manual_path_resolution_check.py tests/manual_restore_archive_check.py tests/manual_restore_preflight_check.py tests/manual_restore_warning_check.py tests/manual_restore_live_check.py tests/manual_restore_live_skip_check.py tests/manual_restore_live_windows_path_check.py`
+- `Live restore cutover`: revalidated runtime path resolution after removing restore staging with `python3 tests/manual_path_resolution_check.py`
+- `Live restore cutover`: revalidated archive validation with `python3 tests/manual_restore_archive_check.py`
+- `Live restore cutover`: revalidated live-restore preflight with `python3 tests/manual_restore_preflight_check.py`
+- `Live restore cutover`: revalidated restore warning behavior with `python3 tests/manual_restore_warning_check.py`
+- `Live restore cutover`: validated live restore overwrite behavior and self-exclusion with `python3 tests/manual_restore_live_check.py`
+- `Live restore cutover`: validated skip-and-report behavior for locked files with `python3 tests/manual_restore_live_skip_check.py`
+- `Live restore cutover`: validated Windows long-path handling for live restore with `python3 tests/manual_restore_live_windows_path_check.py`
+- `Live restore cutover`: rebuilt the addon package after removing staged restore via `python3 tools/build_addon_zip.py`
+- `Live restore cutover`: revalidated package layout after removing staged restore with `python3 tests/manual_package_build_check.py`
+- `Backup self-exclusion fix`: compiled the updated backup modules and self-exclusion regression check with `python3 -m py_compile resources/lib/backup_preflight.py resources/lib/backup_engine.py tests/manual_backup_preflight_check.py tests/manual_backup_archive_check.py tests/manual_backup_self_exclusion_check.py`
+- `Backup self-exclusion fix`: revalidated backup preflight with `python3 tests/manual_backup_preflight_check.py`
+- `Backup self-exclusion fix`: revalidated backup archive collection with `python3 tests/manual_backup_archive_check.py`
+- `Backup self-exclusion fix`: validated exclusion of `userdata/addon_data/script.kodi.mirror/` from backup scanning and archive collection with `python3 tests/manual_backup_self_exclusion_check.py`
+- `Backup self-exclusion fix`: rebuilt the addon package after excluding this addon's addon-data from backup via `python3 tools/build_addon_zip.py`
+- `Backup self-exclusion fix`: revalidated package layout after the backup self-exclusion change with `python3 tests/manual_package_build_check.py`
+- `Restore UX simplification`: compiled the updated live-restore window flow with `python3 -m py_compile resources/lib/main_window.py`
+- `Restore UX simplification`: revalidated live restore success and skip reporting with `python3 tests/manual_restore_live_check.py` and `python3 tests/manual_restore_live_skip_check.py`
+- `Restore UX simplification`: rebuilt the addon package after removing the extra no-warning restore confirmation via `python3 tools/build_addon_zip.py`
+- `Restore UX simplification`: revalidated package layout after the restore UX simplification with `python3 tests/manual_package_build_check.py`
+- `Live QA`: Windows testing confirmed the no-warning restore path now reaches live restore after archive selection without an extra `Start live restore` step
+- `Live QA`: Windows testing confirmed best-effort live restore can complete with a short skipped-file list instead of failing the whole operation, including a run that restored 11585 files and skipped 2 locked addon files
 
 ## Change Log
 
@@ -802,6 +841,20 @@ Open items to resolve before implementation starts:
 - Simplified the backup review loop again after live testing showed the destination-view branch was unnecessary and the cleanup editor needed its commit action at the end of the list
 - Simplified the backup-complete dialog after live testing showed the prior multi-line summary was not surfacing reliably after archive creation
 - Recorded two remaining live QA issues for the next handoff: missing backup-complete summary dialog and restore flow not working end-to-end
+- Added targeted backup and restore stage logging so the next live QA pass can pinpoint whether failures occur before dialog handoff, during restore staging, or during restore apply
+- Restored plain-Python importability for non-UI validation after the logging pass by making the logging module run outside Kodi when `xbmc` is unavailable
+- Fixed the backup crash introduced by the logging pass after Windows QA showed the new backup preflight log was reading keys that do not exist in the preflight result
+- Reworked all addon `Dialog().ok(...)` calls to send a single composed message string after Windows Kodi showed that this runtime rejects the older multi-argument call pattern
+- Added Windows long-path handling for restore staging so deeply nested archive entries can extract under the locked pending-restore path without failing at normal path-length limits
+- Updated restore messaging to state that KodiMirror must be run again after restart for the staged restore to apply, matching the current trigger path
+- Added the same Windows long-path handling to restore apply so staged files that extracted successfully can also be copied into the live target roots during the relaunch step
+- Changed startup pending-restore handling so a staged restore no longer hard-blocks KodiMirror after a failed apply: users can now apply, open the app without applying, or discard the staged restore
+- Reopened the restore architecture after live Windows testing proved that staged apply on next launch still hits the same in-process file-lock constraints as live restore
+- Removed the staged restore system entirely and cut over to best-effort live restore with overwrite-only semantics and skip/report handling for locked or unwritable files
+- Removed pending-restore startup behavior, pending-plan handling, and staging-path runtime resolution so the addon no longer carries dead staged-restore code
+- Excluded this addon's own `userdata/addon_data/script.kodi.mirror/` tree from backup scanning and archive creation so stale internal restore leftovers cannot break future backups
+- Removed the extra no-warning restore confirmation step so selecting a valid archive now starts live restore immediately after validation
+- Changed the restore completion dialog to state partial success explicitly when files are skipped during live restore
 
 ## Session Handoff
 
@@ -829,15 +882,15 @@ Latest state:
 - `CP-020` is complete
 - `CP-021` is complete
 - `CP-022` is complete
+- `CP-024` is complete
 - Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
 - Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
-- Restore now checks manifest JSON structure, required restore roots, staging-path creation/writability, and restore staging free space before any extraction work begins
+- Restore now checks manifest JSON structure, required restore roots, and live target-root readiness before any file writes begin
 - Restore now warns when the backup platform family differs or the Kodi major version differs, while keeping restore allowed for later steps
-- Restore now extracts the backup into staged `payload/` content, writes `pending_restore_plan.json`, clears stale staged content first, and refuses unsafe or unsupported archive members
-- Startup now detects a pending restore, applies staged `userdata/` and `addons/` with replace semantics, removes target paths absent from the staged payload, and clears staging on success
-- Restore apply now skips this addon's live `addons/script.kodi.mirror/` and `userdata/addon_data/script.kodi.mirror/` trees so startup apply no longer self-overwrites the running addon
-- Restore apply failures now report the failing step and path more explicitly, and staged restore content remains in place after an apply failure for later inspection or retry
-- Restore preparation, restart-required apply, restore completion, and restore-apply failure dialogs now use shorter operational wording aligned with the product messaging constraints
+- Restore now applies live directly from the selected zip, overwrites files where possible, leaves non-backed-up live files untouched, and refuses unsafe archive entries
+- Live restore skips this addon's live `addons/script.kodi.mirror/` and `userdata/addon_data/script.kodi.mirror/` trees so the running addon does not self-overwrite
+- Live restore now reports restored and skipped results instead of failing the whole restore on locked or unwritable files
+- Restore warning and completion dialogs now describe live restore explicitly instead of referring to staging, restart, or later apply
 - The main Kodi window now renders as a centered opaque modal over a dimmed backdrop instead of as transparent free-floating controls, addressing the unusable PC UI report
 - The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling while preserving the existing workflow and control ids
 - The main Kodi window shell is now fully opaque and uses addon-owned `solid-white.png` media for fills, so the live Kodi interface should no longer bleed through behind the addon UI
@@ -852,16 +905,22 @@ Latest state:
 - Backup now opens a review loop first: `Start backup`, `Edit cleanup`, `View destination`, or `Cancel`, with cleanup editing moved into a dedicated sub-step and `Cleanup Options` wording reflected in the main UI
 - Backup review no longer exposes the unused destination-view action, and the cleanup editor now ends with `Apply cleanup selection` at the bottom of the list instead of a top `Done` action
 - Backup completion now uses a minimal success dialog with only the archive path and file count, keeping the post-backup message within Kodi's simpler dialog expectations
-- Live Windows QA still reports that the backup-complete summary dialog does not appear after a successful backup, so that path remains unresolved
-- Live Windows QA also reports that restore does not currently work, so restore needs an explicit bug-fix pass before claiming broader readiness
+- Backup and restore now emit targeted logs around dialog handoff, archive validation, live restore start, and restore result summary
+- Previous live Windows QA exposed three concrete blockers now fixed in code: a backup-flow `KeyError`, invalid multi-argument `Dialog().ok(...)` calls, and restore-staging failure on long Windows paths
+- Backup is now confirmed working on live Windows, including the backup-complete confirmation dialog
+- Live Windows QA established the key restore constraint: active addon files such as `addons/peripheral.joystick/peripheral.joystick.dll` can stay locked while Kodi is running
+- Restore is now intentionally best-effort live apply, so those locked files are expected skip candidates rather than a reason to keep staged restart logic that does not avoid the same locks
+- Backup now excludes this addon's own addon-data tree, so stale `pending_restore` leftovers from older builds can no longer break backup preflight or archive collection
+- The no-warning restore path now starts live restore immediately after archive selection, removing the extra `Start live restore` prompt
+- Live Windows QA now shows a representative best-effort restore result of 11585 restored files and 2 skipped locked addon files, matching the intended partial-success model
 - Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with a top-level `script.kodi.mirror/` folder, `addon.xml` inside that folder, and only the actual addon payload included
-- Compile, restore apply, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- Compile, live restore, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Run a QA bug-fix pass first: fix the missing backup-complete summary dialog and the currently non-working restore flow before new feature or docs work.
-2. Re-test the repaired backup and restore flows on Windows, then update this handoff with exact observed behavior and validation evidence.
-3. Only return to `CP-023` README work after the active live QA blockers are resolved or reduced to clearly documented limitations.
+1. Run one more live Windows restore pass with the rebuilt zip to confirm the updated completion wording reads clearly on-screen when skipped files are present.
+2. If that UX reads well, move on to `CP-023` README work and keep `CP-026` open only for later cross-platform warning validation.
+3. Only revisit broader restore architecture if best-effort live restore proves materially worse than expected in real usage.
 
 Constraints to keep in view:
 
@@ -869,4 +928,4 @@ Constraints to keep in view:
 - Do not add fallback behavior unless it is currently required.
 - Prefer Kodi special paths over OS-specific Kodi source detection.
 - Preserve remote-friendly UX as a first-class requirement.
-- Make staged restore status obvious to the user at every step.
+- Make live restore status and skipped-file reporting obvious to the user at every step.

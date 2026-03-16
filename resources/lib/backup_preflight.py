@@ -1,10 +1,15 @@
 import os
 import shutil
 
+from resources.lib.constants import ADDON_ID
 from resources.lib.destination import DestinationError, validate_backup_destination
 
 
 FREE_SPACE_BUFFER_BYTES = 64 * 1024 * 1024
+EXCLUDED_BACKUP_PATHS = {
+    "userdata": (os.path.join("addon_data", ADDON_ID),),
+    "addons": (),
+}
 
 
 class BackupPreflightError(RuntimeError):
@@ -23,12 +28,41 @@ def _require_readable_directory(path, label):
     return path
 
 
-def _collect_directory_stats(path):
+def _is_excluded_backup_path(root_name, relative_path):
+    normalized_path = os.path.normpath(relative_path or "")
+    if normalized_path in ("", "."):
+        return False
+
+    for excluded_prefix in EXCLUDED_BACKUP_PATHS.get(root_name, ()):
+        normalized_prefix = os.path.normpath(excluded_prefix)
+        if normalized_path == normalized_prefix:
+            return True
+        if normalized_path.startswith(normalized_prefix + os.sep):
+            return True
+    return False
+
+
+def _collect_directory_stats(root_name, path):
     total_bytes = 0
     file_count = 0
 
-    for current_root, _, filenames in os.walk(path, onerror=_raise_walk_error):
+    for current_root, dirnames, filenames in os.walk(path, onerror=_raise_walk_error):
+        relative_root = os.path.relpath(current_root, path)
+        if relative_root == ".":
+            relative_root = ""
+
+        dirnames[:] = [
+            dirname
+            for dirname in dirnames
+            if not _is_excluded_backup_path(
+                root_name,
+                os.path.join(relative_root, dirname) if relative_root else dirname,
+            )
+        ]
         for filename in filenames:
+            relative_path = os.path.join(relative_root, filename) if relative_root else filename
+            if _is_excluded_backup_path(root_name, relative_path):
+                continue
             current_path = os.path.join(current_root, filename)
             try:
                 total_bytes += os.path.getsize(current_path)
@@ -58,8 +92,8 @@ def run_backup_preflight(
     userdata_path = _require_readable_directory(runtime_paths["userdata"], "userdata")
     addons_path = _require_readable_directory(runtime_paths["addons"], "addons")
 
-    userdata_bytes, userdata_files = _collect_directory_stats(userdata_path)
-    addons_bytes, addons_files = _collect_directory_stats(addons_path)
+    userdata_bytes, userdata_files = _collect_directory_stats("userdata", userdata_path)
+    addons_bytes, addons_files = _collect_directory_stats("addons", addons_path)
 
     source_bytes = userdata_bytes + addons_bytes
     file_count = userdata_files + addons_files

@@ -2,15 +2,10 @@ import xbmcaddon
 import xbmcgui
 
 from resources.lib import log
+from resources.lib.dialog import compose_dialog_text
 from resources.lib.destination import resolve_active_destination_state
 from resources.lib.main_window import open_main_window
 from resources.lib.paths import PathResolutionError, resolve_runtime_paths
-from resources.lib.restore_apply import (
-    RestoreApplyError,
-    apply_pending_restore,
-    format_restore_apply_stage,
-    has_pending_restore,
-)
 
 
 def run():
@@ -24,34 +19,16 @@ def run():
         runtime_paths = resolve_runtime_paths()
     except PathResolutionError as exc:
         log.error(str(exc))
-        xbmcgui.Dialog().ok(addon_name, "Startup failed.", str(exc))
-        return
-
-    if has_pending_restore(runtime_paths):
-        log.info("Pending restore detected at startup")
-        try:
-            restore_result = apply_pending_restore(runtime_paths)
-        except RestoreApplyError as exc:
-            log.error(str(exc))
-            xbmcgui.Dialog().ok(
-                addon_name,
-                "Restore apply failed.",
-                "Restore did not finish.",
-                f"Step: {format_restore_apply_stage(exc.stage)}",
-                str(exc),
-                "Fix the issue and restart Kodi to retry.",
-            )
-            return
-
-        log.info("Pending restore applied successfully")
         xbmcgui.Dialog().ok(
             addon_name,
-            "Restore complete.",
-            "Restore was applied after restart.",
-            f"Files copied: {restore_result['copied_file_count']}",
-            f"Paths removed: {restore_result['removed_path_count']}",
+            compose_dialog_text("Startup failed.", str(exc)),
         )
         return
+    log.info(
+        "Runtime paths resolved: "
+        f"userdata={runtime_paths['userdata']} "
+        f"addons={runtime_paths['addons']}"
+    )
 
     destination_state = resolve_active_destination_state(addon)
     if destination_state["is_ready"]:

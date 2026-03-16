@@ -1,7 +1,6 @@
 import xbmcvfs
 
 from resources.lib.constants import (
-    RESTORE_STAGING_PATH,
     SPECIAL_ADDONS_PATH,
     SPECIAL_HOME_PATH,
     SPECIAL_MASTERPROFILE_PATH,
@@ -32,7 +31,6 @@ def resolve_runtime_paths():
         "masterprofile": _translate_special_path(SPECIAL_MASTERPROFILE_PATH),
         "userdata": _translate_special_path(SPECIAL_USERDATA_PATH),
         "addons": _translate_special_path(SPECIAL_ADDONS_PATH),
-        "restore_staging": _translate_special_path(RESTORE_STAGING_PATH),
     }
 
     _require_directory(paths["home"], "home")

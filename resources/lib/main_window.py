@@ -1,5 +1,6 @@
 import xbmcgui
 
+from resources.lib import log
 from resources.lib.backup_engine import (
     BackupArchiveError,
     collect_backup_entries,
@@ -17,6 +18,7 @@ from resources.lib.cleanup import (
     format_cleanup_selections,
     run_cleanup,
 )
+from resources.lib.dialog import compose_dialog_text
 from resources.lib.destination import (
     DestinationError,
     clear_saved_backup_destination,
@@ -24,8 +26,8 @@ from resources.lib.destination import (
     save_selected_backup_destination,
 )
 from resources.lib.restore_archive import RestoreArchiveError, validate_restore_archive
+from resources.lib.restore_live import RestoreLiveError, apply_live_restore
 from resources.lib.restore_preflight import RestorePreflightError, run_restore_preflight
-from resources.lib.restore_stage import RestoreStageError, stage_restore_payload
 from resources.lib.restore_warning import RestoreWarningError, build_restore_warnings
 from resources.lib.constants import (
     CONTROL_ID_ADDONS_PATH,
@@ -174,16 +176,20 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         except DestinationError as exc:
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Destination not saved.",
-                str(exc),
+                compose_dialog_text(
+                    "Destination not saved.",
+                    str(exc),
+                ),
             )
             return
 
         self._refresh_destination_display()
         xbmcgui.Dialog().ok(
             self._addon_name,
-            "Backup destination saved.",
-            self._destination_state["path"],
+            compose_dialog_text(
+                "Backup destination saved.",
+                self._destination_state["path"],
+            ),
         )
 
     def _open_settings(self):
@@ -207,16 +213,20 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         if self._destination_state["is_ready"]:
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Default destination active.",
-                self._destination_state["path"],
+                compose_dialog_text(
+                    "Default destination active.",
+                    self._destination_state["path"],
+                ),
             )
             return
 
         xbmcgui.Dialog().ok(
             self._addon_name,
-            "Default destination not ready.",
-            self._destination_state["error"],
-            "Choose Backup Destination to save another path.",
+            compose_dialog_text(
+                "Default destination not ready.",
+                self._destination_state["error"],
+                "Choose Backup Destination to save another path.",
+            ),
         )
 
     def _browse_restore_archive(self):
@@ -231,66 +241,153 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             start_path,
         )
         if not selected_path:
+            log.info("Restore archive browse canceled")
             return
+
+        log.info(f"Restore archive selected: {selected_path}")
 
         try:
             archive_details = validate_restore_archive(selected_path)
         except RestoreArchiveError as exc:
+            log.error(f"Restore archive validation failed: {exc}")
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Restore cannot start.",
-                str(exc),
-                "Choose a valid KodiMirror backup zip.",
+                compose_dialog_text(
+                    "Restore cannot start.",
+                    str(exc),
+                    "Choose a valid KodiMirror backup zip.",
+                ),
             )
             return
+        log.info(
+            "Restore archive validated successfully: "
+            f"{archive_details['entry_count']} entries"
+        )
 
         try:
             preflight = run_restore_preflight(self._runtime_paths, archive_details)
         except RestorePreflightError as exc:
+            log.error(f"Restore preflight failed: {exc}")
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Restore cannot start.",
-                str(exc),
-                "Fix the reported issue and try again.",
+                compose_dialog_text(
+                    "Restore cannot start.",
+                    str(exc),
+                    "Fix the reported issue and try again.",
+                ),
             )
             return
+        log.info(
+            "Restore preflight passed: "
+            f"archive_bytes={preflight['archive_bytes']} "
+            f"entry_count={preflight['entry_count']} "
+            f"userdata_target={preflight['target_root_paths']['userdata']} "
+            f"addons_target={preflight['target_root_paths']['addons']}"
+        )
 
         try:
             warning_result = build_restore_warnings(preflight["manifest"])
         except RestoreWarningError as exc:
+            log.error(f"Restore warning evaluation failed: {exc}")
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Restore cannot start.",
-                str(exc),
-                "Fix the reported issue and try again.",
+                compose_dialog_text(
+                    "Restore cannot start.",
+                    str(exc),
+                    "Fix the reported issue and try again.",
+                ),
             )
             return
-
-        dialog_lines = [
-            "Restart Kodi to apply this restore.",
-        ]
         if warning_result["warnings"]:
+            log.info(
+                "Restore warnings generated: "
+                + " | ".join(warning_result["warnings"])
+            )
+        else:
+            log.info("Restore warnings generated: none")
+
+        if warning_result["warnings"]:
+            dialog_lines = [
+                "Live restore runs now.",
+                "Files Kodi is using may stay unchanged.",
+            ]
             dialog_lines.extend(warning_result["warnings"])
             dialog_lines.append("Restore can continue.")
-            dialog_lines.append("Some addons may not work on this device.")
-        dialog_lines.append(f"Archive entries: {archive_details['entry_count']}")
-        dialog_lines.append(archive_details["path"])
-
-        try:
-            staged_restore = stage_restore_payload(self._runtime_paths, preflight)
-        except RestoreStageError as exc:
+            dialog_lines.append(f"Archive entries: {archive_details['entry_count']}")
+            dialog_lines.append(archive_details["path"])
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Restore staging failed.",
-                str(exc),
+                compose_dialog_text(
+                    "Restore warnings.",
+                    *dialog_lines,
+                ),
+            )
+
+        progress = BackupProgress(xbmcgui.DialogProgress())
+        progress.start("Restore")
+        log.info("Restore progress dialog opened")
+        last_percent = {"value": 15}
+
+        def update_restore_progress(current_entry, total_entries, _archive_name):
+            if total_entries <= 0:
+                return
+            percent = 15 + int((current_entry * 80) / total_entries)
+            if percent <= last_percent["value"]:
+                return
+            last_percent["value"] = percent
+            progress.update(percent, "Applying live restore.")
+
+        try:
+            progress.update(15, "Applying live restore.")
+            restore_result = apply_live_restore(
+                self._runtime_paths,
+                preflight,
+                progress_callback=update_restore_progress,
+            )
+        except RestoreLiveError as exc:
+            progress.close()
+            log.error(f"Live restore failed: {exc}")
+            xbmcgui.Dialog().ok(
+                self._addon_name,
+                compose_dialog_text(
+                    "Restore failed.",
+                    str(exc),
+                ),
             )
             return
 
+        progress.update(100, "Restore complete.")
+        progress.close()
+        log.info(
+            "Live restore finished: "
+            f"restored_file_count={restore_result['restored_file_count']} "
+            f"skipped_file_count={restore_result['skipped_file_count']}"
+        )
+        for skipped_entry in restore_result["skipped_entries"]:
+            log.info(
+                "Live restore skipped: "
+                f"{skipped_entry['archive_path']} ({skipped_entry['reason']})"
+            )
+        if restore_result["skipped_file_count"] > 0:
+            result_lines = [
+                f"Restore completed with {restore_result['skipped_file_count']} skipped files.",
+                f"Files restored: {restore_result['restored_file_count']}",
+                f"Files skipped: {restore_result['skipped_file_count']}",
+            ]
+        else:
+            result_lines = [
+                "Restore completed successfully.",
+                f"Files restored: {restore_result['restored_file_count']}",
+                "Files skipped: 0",
+            ]
+        if restore_result["skipped_file_count"] > 0:
+            result_lines.append("Some files stayed unchanged while Kodi was running.")
+            for skipped_entry in restore_result["skipped_entries"][:3]:
+                result_lines.append(skipped_entry["archive_path"])
+            result_lines.append("See kodi.log for skipped details.")
         xbmcgui.Dialog().ok(
             self._addon_name,
-            "Restore prepared.",
-            *dialog_lines,
-            f"Staged at: {preflight['staging_path']}",
+            compose_dialog_text(*result_lines),
         )
 
     def onClick(self, control_id):
@@ -304,9 +401,12 @@ class MainWindow(xbmcgui.WindowXMLDialog):
 
         if control_id == CONTROL_ID_BACKUP:
             if not self._open_backup_review():
+                log.info("Backup review canceled")
                 return
+            log.info("Backup flow confirmed by user")
             progress = BackupProgress(xbmcgui.DialogProgress())
             progress.start("Backup")
+            log.info("Backup progress dialog opened")
             try:
                 progress.update(10, "Checking backup paths.")
                 preflight = run_backup_preflight(
@@ -315,30 +415,59 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 )
             except BackupPreflightError as exc:
                 progress.close()
+                log.error(f"Backup preflight failed: {exc}")
                 xbmcgui.Dialog().ok(
                     self._addon_name,
-                    "Backup cannot start.",
-                    str(exc),
-                    "Fix the reported issue and try again.",
+                    compose_dialog_text(
+                        "Backup cannot start.",
+                        str(exc),
+                        "Fix the reported issue and try again.",
+                    ),
                 )
                 return
+            log.info(
+                "Backup preflight passed: "
+                f"destination_path={preflight['destination_path']} "
+                f"source_bytes={preflight['source_bytes']} "
+                f"required_bytes={preflight['required_bytes']} "
+                f"free_bytes={preflight['free_bytes']}"
+            )
 
             try:
                 progress.update(30, "Cleaning selected cache folders.")
                 cleanup_results = run_cleanup(self._cleanup_selections)
             except CleanupError as exc:
                 progress.close()
+                log.error(f"Cleanup failed before backup: {exc}")
                 xbmcgui.Dialog().ok(
                     self._addon_name,
-                    "Cleanup failed.",
-                    str(exc),
-                    "Backup did not start.",
+                    compose_dialog_text(
+                        "Cleanup failed.",
+                        str(exc),
+                        "Backup did not start.",
+                    ),
                 )
                 return
+            cleaned_count = sum(
+                1 for result in cleanup_results if result["status"] == "cleaned"
+            )
+            skipped_count = sum(
+                1 for result in cleanup_results if result["status"] == "missing"
+            )
+            log.info(
+                "Cleanup completed before backup: "
+                f"cleaned={cleaned_count} skipped={skipped_count} "
+                f"selected={sum(1 for selection in self._cleanup_selections if selection['selected'])}"
+            )
 
             try:
                 progress.update(55, "Collecting files for backup.")
                 collected_entries = collect_backup_entries(self._runtime_paths)
+                log.info(
+                    "Backup entries collected: "
+                    f"file_count={collected_entries['file_count']} "
+                    f"source_bytes={collected_entries['source_bytes']}"
+                )
                 progress.update(70, "Building backup manifest.")
                 manifest = build_backup_manifest(
                     addon_version=self._addon.getAddonInfo("version"),
@@ -346,6 +475,11 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                     backup_stats=collected_entries,
                     cleanup_selections=self._cleanup_selections,
                     cleanup_results=cleanup_results,
+                )
+                log.info(
+                    "Backup manifest built: "
+                    f"file_count={manifest['file_count']} "
+                    f"uncompressed_byte_size={manifest['uncompressed_byte_size']}"
                 )
                 progress.update(85, "Writing backup archive.")
                 archive_path = create_backup_archive(
@@ -355,21 +489,31 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 )
             except (BackupArchiveError, BackupManifestError) as exc:
                 progress.close()
+                log.error(f"Backup execution failed: {exc}")
                 xbmcgui.Dialog().ok(
                     self._addon_name,
-                    "Backup failed.",
-                    str(exc),
+                    compose_dialog_text(
+                        "Backup failed.",
+                        str(exc),
+                    ),
                 )
                 return
 
             progress.update(100, "Backup complete.")
+            log.info(f"Backup archive created successfully: {archive_path}")
+            log.info("Closing backup progress dialog")
             progress.close()
+            log.info("Backup progress dialog closed")
+            log.info("Opening backup complete dialog")
             xbmcgui.Dialog().ok(
                 self._addon_name,
-                "Backup complete.",
-                archive_path,
-                f"Files backed up: {manifest['file_count']}",
+                compose_dialog_text(
+                    "Backup complete.",
+                    archive_path,
+                    f"Files backed up: {manifest['file_count']}",
+                ),
             )
+            log.info("Backup complete dialog closed")
             return
         if control_id == CONTROL_ID_RESTORE:
             self._browse_restore_archive()

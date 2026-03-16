@@ -2,7 +2,6 @@ import os
 import shutil
 import sys
 import tempfile
-import types
 import zipfile
 
 
@@ -38,20 +37,18 @@ def main():
         )
         archive_details = validate_restore_archive(archive_path)
         runtime_paths = {
-            "restore_staging": os.path.join(temp_root, "pending_restore"),
+            "userdata": os.path.join(temp_root, "live-userdata"),
+            "addons": os.path.join(temp_root, "live-addons"),
         }
 
-        success = run_restore_preflight(
-            runtime_paths,
-            archive_details,
-            disk_usage=lambda _path: types.SimpleNamespace(free=10_000_000),
-            safety_buffer_bytes=0,
-        )
+        success = run_restore_preflight(runtime_paths, archive_details)
         assert success["archive_path"] == archive_path
         assert success["manifest"]["manifest_schema_version"] == 1
         assert success["manifest"]["included_top_level_roots"] == ["userdata", "addons"]
-        assert success["staging_path"] == os.path.normpath(runtime_paths["restore_staging"])
-        assert os.path.isdir(success["staging_path"])
+        assert success["target_root_paths"]["userdata"] == os.path.normpath(runtime_paths["userdata"])
+        assert success["target_root_paths"]["addons"] == os.path.normpath(runtime_paths["addons"])
+        assert os.path.isdir(success["target_root_paths"]["userdata"])
+        assert os.path.isdir(success["target_root_paths"]["addons"])
         assert success["archive_bytes"] == (
             len(
                 '{"manifest_schema_version": 1, "included_top_level_roots": ["userdata", "addons"]}'
@@ -69,12 +66,7 @@ def main():
             },
         )
         try:
-            run_restore_preflight(
-                runtime_paths,
-                validate_restore_archive(invalid_manifest_archive),
-                disk_usage=lambda _path: types.SimpleNamespace(free=10_000_000),
-                safety_buffer_bytes=0,
-            )
+            run_restore_preflight(runtime_paths, validate_restore_archive(invalid_manifest_archive))
         except RestorePreflightError as exc:
             assert "not valid JSON" in str(exc)
         else:
@@ -92,28 +84,28 @@ def main():
             },
         )
         try:
-            run_restore_preflight(
-                runtime_paths,
-                validate_restore_archive(missing_roots_archive),
-                disk_usage=lambda _path: types.SimpleNamespace(free=10_000_000),
-                safety_buffer_bytes=0,
-            )
+            run_restore_preflight(runtime_paths, validate_restore_archive(missing_roots_archive))
         except RestorePreflightError as exc:
             assert "missing required restore roots" in str(exc)
         else:
             raise AssertionError("Expected missing restore roots to fail preflight.")
 
+        blocked_userdata_path = os.path.join(temp_root, "blocked-userdata")
+        with open(blocked_userdata_path, "w", encoding="utf-8") as handle:
+            handle.write("blocked")
+
         try:
             run_restore_preflight(
-                runtime_paths,
+                {
+                    "userdata": blocked_userdata_path,
+                    "addons": os.path.join(temp_root, "alt-addons"),
+                },
                 archive_details,
-                disk_usage=lambda _path: types.SimpleNamespace(free=1),
-                safety_buffer_bytes=0,
             )
         except RestorePreflightError as exc:
-            assert "Not enough free space" in str(exc)
+            assert "not a directory" in str(exc)
         else:
-            raise AssertionError("Expected low free space to fail preflight.")
+            raise AssertionError("Expected file-backed restore target to fail preflight.")
     finally:
         shutil.rmtree(temp_root)
 

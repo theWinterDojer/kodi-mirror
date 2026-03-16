@@ -13,7 +13,6 @@ SPECIAL_PATHS = {
     "special://masterprofile/": "/kodi/masterprofile",
     "special://home/userdata/": "/kodi/home/userdata",
     "special://home/addons/": "/kodi/home/addons",
-    "special://profile/addon_data/script.kodi.mirror/pending_restore/": "/kodi/profile/addon_data/script.kodi.mirror/pending_restore",
 }
 
 
@@ -33,7 +32,6 @@ def main():
     paths = resolve_runtime_paths()
     assert paths["userdata"] == "/kodi/home/userdata"
     assert paths["addons"] == "/kodi/home/addons"
-    assert paths["restore_staging"] == "/kodi/profile/addon_data/script.kodi.mirror/pending_restore"
     print("path resolution ok")
 
 
