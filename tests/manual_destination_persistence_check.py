@@ -65,6 +65,15 @@ def main():
         assert restored_state["path"] == os.path.normpath(selected_path)
         assert restored_state["is_ready"] is True
 
+        destination_module.clear_saved_backup_destination(addon)
+        reset_state = destination_module.resolve_active_destination_state(
+            addon,
+            {"HOME": default_home},
+        )
+        assert reset_state["source"] == "default"
+        assert reset_state["path"] == default_state["path"]
+        assert reset_state["is_ready"] is True
+
         broken_path = os.path.join(temp_root, "not-a-directory")
         with open(broken_path, "w", encoding="utf-8") as handle:
             handle.write("x")

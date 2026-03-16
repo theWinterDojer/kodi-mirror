@@ -1,6 +1,6 @@
 # KodiMirror Progress
 
-Last updated: 2026-03-15
+Last updated: 2026-03-16
 
 ## Project Summary
 
@@ -709,6 +709,46 @@ Open items to resolve before implementation starts:
 - `CP-022`: validated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
 - `CP-022`: confirmed the corrected package layout after a real Kodi install failure against the root-file zip shape
 
+### 2026-03-16
+
+- `UI regression fix`: validated the main window XML structure and required backdrop/panel controls with `python3 tests/manual_ui_asset_check.py`
+- `UI regression fix`: compiled the tightened UI asset check with `python3 -m py_compile tests/manual_ui_asset_check.py`
+- `UI regression fix`: rebuilt the addon package with the opaque-background skin revision via `python3 tools/build_addon_zip.py`
+- `UI regression fix`: revalidated package layout after adding skin media with `python3 tests/manual_package_build_check.py`
+- `UI layout cleanup`: compiled the updated main window controller and UI asset check with `python3 -m py_compile resources/lib/main_window.py tests/manual_ui_asset_check.py`
+- `UI layout cleanup`: validated the restructured XML layout and required backdrop/panel controls with `python3 tests/manual_ui_asset_check.py`
+- `UI layout cleanup`: rebuilt the addon package after the layout simplification via `python3 tools/build_addon_zip.py`
+- `UI layout cleanup`: revalidated package layout after the layout simplification with `python3 tests/manual_package_build_check.py`
+- `UI flow fix`: compiled the updated main window controller, destination module, and targeted checks with `python3 -m py_compile resources/lib/main_window.py resources/lib/destination.py tests/manual_destination_persistence_check.py tests/manual_ui_asset_check.py`
+- `UI flow fix`: validated saved-destination reset behavior for the new settings action with `python3 tests/manual_destination_persistence_check.py`
+- `UI flow fix`: revalidated the main window XML asset with `python3 tests/manual_ui_asset_check.py`
+- `UI flow fix`: rebuilt the addon package after wiring settings and backup confirmation via `python3 tools/build_addon_zip.py`
+- `UI flow fix`: revalidated package layout after wiring settings and backup confirmation with `python3 tests/manual_package_build_check.py`
+- `Backup interaction fix`: compiled the updated backup UI flow, cleanup model, and targeted checks with `python3 -m py_compile resources/lib/main_window.py resources/lib/cleanup.py tests/manual_cleanup_model_check.py tests/manual_cleanup_execution_check.py tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: validated cleanup defaults and formatting after switching cleanup to opt-in with `python3 tests/manual_cleanup_model_check.py`
+- `Backup interaction fix`: revalidated cleanup execution semantics with `python3 tests/manual_cleanup_execution_check.py`
+- `Backup interaction fix`: revalidated the main window XML asset with `python3 tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: rebuilt the addon package after simplifying the backup interaction via `python3 tools/build_addon_zip.py`
+- `Backup interaction fix`: revalidated package layout after simplifying the backup interaction with `python3 tests/manual_package_build_check.py`
+- `Backup interaction fix`: recompiled the main window controller after replacing the cleanup multiselect flow with a stepwise selector via `python3 -m py_compile resources/lib/main_window.py resources/lib/cleanup.py tests/manual_cleanup_model_check.py tests/manual_cleanup_execution_check.py tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: revalidated cleanup defaults and execution after replacing the cleanup multiselect flow with `python3 tests/manual_cleanup_model_check.py` and `python3 tests/manual_cleanup_execution_check.py`
+- `Backup interaction fix`: rebuilt the addon package after replacing the cleanup multiselect flow via `python3 tools/build_addon_zip.py`
+- `Backup interaction fix`: revalidated package layout after replacing the cleanup multiselect flow with `python3 tests/manual_package_build_check.py`
+- `Backup interaction fix`: recompiled the main window controller after removing `yesno` from the backup flow via `python3 -m py_compile resources/lib/main_window.py resources/lib/cleanup.py tests/manual_cleanup_model_check.py tests/manual_cleanup_execution_check.py tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: rebuilt the addon package after reducing the backup flow to select dialogs only via `python3 tools/build_addon_zip.py`
+- `Backup interaction fix`: revalidated package layout after reducing the backup flow to select dialogs only with `python3 tests/manual_package_build_check.py`
+- `Backup interaction fix`: recompiled the main window controller after replacing the backup mode chooser with a review loop via `python3 -m py_compile resources/lib/main_window.py resources/lib/cleanup.py tests/manual_cleanup_model_check.py tests/manual_cleanup_execution_check.py tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: rebuilt the addon package after replacing the backup mode chooser with a review loop via `python3 tools/build_addon_zip.py`
+- `Backup interaction fix`: revalidated package layout after replacing the backup mode chooser with a review loop via `python3 tests/manual_package_build_check.py`
+- `Backup interaction fix`: recompiled the main window controller after removing the dead destination-view branch and moving cleanup apply to the bottom of the selector via `python3 -m py_compile resources/lib/main_window.py resources/lib/cleanup.py tests/manual_cleanup_model_check.py tests/manual_cleanup_execution_check.py tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: rebuilt the addon package after removing the dead destination-view branch and moving cleanup apply to the bottom of the selector via `python3 tools/build_addon_zip.py`
+- `Backup interaction fix`: revalidated package layout after removing the dead destination-view branch and moving cleanup apply to the bottom of the selector via `python3 tests/manual_package_build_check.py`
+- `Backup interaction fix`: recompiled the main window controller after reducing the backup-complete dialog to a minimal summary via `python3 -m py_compile resources/lib/main_window.py tests/manual_ui_asset_check.py`
+- `Backup interaction fix`: rebuilt the addon package after reducing the backup-complete dialog to a minimal summary via `python3 tools/build_addon_zip.py`
+- `Backup interaction fix`: revalidated package layout after reducing the backup-complete dialog to a minimal summary via `python3 tests/manual_package_build_check.py`
+- `Live QA`: Windows testing confirmed the backup flow now runs through cleanup selection and backup execution, but the post-backup success summary still does not appear after completion
+- `Live QA`: Windows testing indicates restore still does not complete successfully and needs a dedicated bug-fix pass before broader validation
+
 ## Change Log
 
 ### 2026-03-15
@@ -742,6 +782,26 @@ Open items to resolve before implementation starts:
 - Completed `CP-020` with shorter operational user messaging for restore preparation, restart-required apply, restore completion, and restore-apply failure states
 - Completed `CP-021` with a stronger black / blue / white XML layout, a clearer action rail, and more scannable status panels for remote-first use
 - Completed `CP-022` with a reusable addon-zip packaging script and a built `dist/script.kodi.mirror-0.1.0.zip` artifact using the Kodi-required top-level addon-folder layout for manual zip installation
+
+### 2026-03-16
+
+- Fixed the main window presentation after PC testing showed the prior XML rendered as a transparent overlay with the Kodi interface visible behind it
+- Reworked the main screen into a centered modal-style layout with a dimmed backdrop, opaque primary panel, and solid information cards for readable remote-first use
+- Tightened UI asset validation so the main skin must include both a fullscreen backdrop and a centered modal panel, preventing a repeat of the transparent-window regression
+- Corrected the first UI fix after live testing showed the modal shell was still too translucent for real Kodi use
+- Removed transparency from the main window shell and switched the skin to an addon-owned solid texture so background fill behavior no longer depends on the active Kodi skin's `white.png`
+- Simplified the main screen again after live testing showed text overlap and clipping on real Windows data
+- Rebuilt the main window into clearer stacked cards with dedicated wrapped fields for long paths and status text, plus shorter copy across the left action rail and restore guidance
+- Replaced the placeholder Settings action with a real v1 settings menu for changing the backup destination or returning to the platform default destination
+- Changed the Backup action so it no longer runs immediately and now requires an explicit confirmation after showing the destination and cleanup selections
+- Corrected the backup interaction after live testing showed the prior confirmation path did not surface reliably on click
+- Switched cleanup from default-on to opt-in, and changed Backup to a simpler `select cleanup options -> confirm -> run` flow
+- Corrected the cleanup chooser after live testing showed Kodi's multiselect dialog did not present a reliable commit path for remote-style use
+- Removed `yesno` from the backup interaction after repeated live failures showed that the current Kodi runtime was not presenting that confirmation path reliably
+- Reworked the backup flow again after live testing showed the mode chooser still front-loaded cleanup editing in an awkward way for TV use
+- Simplified the backup review loop again after live testing showed the destination-view branch was unnecessary and the cleanup editor needed its commit action at the end of the list
+- Simplified the backup-complete dialog after live testing showed the prior multi-line summary was not surfacing reliably after archive creation
+- Recorded two remaining live QA issues for the next handoff: missing backup-complete summary dialog and restore flow not working end-to-end
 
 ## Session Handoff
 
@@ -778,15 +838,30 @@ Latest state:
 - Restore apply now skips this addon's live `addons/script.kodi.mirror/` and `userdata/addon_data/script.kodi.mirror/` trees so startup apply no longer self-overwrites the running addon
 - Restore apply failures now report the failing step and path more explicitly, and staged restore content remains in place after an apply failure for later inspection or retry
 - Restore preparation, restart-required apply, restore completion, and restore-apply failure dialogs now use shorter operational wording aligned with the product messaging constraints
+- The main Kodi window now renders as a centered opaque modal over a dimmed backdrop instead of as transparent free-floating controls, addressing the unusable PC UI report
 - The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling while preserving the existing workflow and control ids
+- The main Kodi window shell is now fully opaque and uses addon-owned `solid-white.png` media for fills, so the live Kodi interface should no longer bleed through behind the addon UI
+- The main Kodi window now uses wrapped textbox fields for destination status and cleanup status, preventing label clipping when dynamic text is longer than a single line
+- The main Kodi window layout is now simplified into separate source-roots, destination, restore, and cleanup cards to avoid the overlap seen in live Windows testing
+- Settings now exposes the v1 destination controls instead of the prior placeholder, including the ability to restore the platform default destination
+- Backup now pauses for an explicit confirmation after showing the destination and current cleanup selections, so cleanup and archive creation do not start on the first click
+- Cleanup is now optional by default, with all cleanup targets starting unselected until the user explicitly enables them
+- Backup now opens a cleanup multiselect first and then a single start-confirmation dialog, replacing the previous two-dialog summary flow
+- Backup now uses a stepwise cleanup selector with an explicit `Done` option instead of Kodi's multiselect dialog, so the pre-backup flow has a clear continue path
+- Backup now uses only Kodi `select` dialogs before execution: choose backup mode, optionally toggle cleanup targets, then choose `Start backup`
+- Backup now opens a review loop first: `Start backup`, `Edit cleanup`, `View destination`, or `Cancel`, with cleanup editing moved into a dedicated sub-step and `Cleanup Options` wording reflected in the main UI
+- Backup review no longer exposes the unused destination-view action, and the cleanup editor now ends with `Apply cleanup selection` at the bottom of the list instead of a top `Done` action
+- Backup completion now uses a minimal success dialog with only the archive path and file count, keeping the post-backup message within Kodi's simpler dialog expectations
+- Live Windows QA still reports that the backup-complete summary dialog does not appear after a successful backup, so that path remains unresolved
+- Live Windows QA also reports that restore does not currently work, so restore needs an explicit bug-fix pass before claiming broader readiness
 - Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with a top-level `script.kodi.mirror/` folder, `addon.xml` inside that folder, and only the actual addon payload included
 - Compile, restore apply, restore staging, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Start `CP-023` write an evergreen README with install and use instructions only.
-2. Treat `dist/script.kodi.mirror-0.1.0.zip` as the current install artifact and document the manual zip-install path before tackling repository-style distribution later.
-3. Keep desktop and Android validation scoped to `CP-024` and `CP-025` unless `CP-023` exposes a real blocker.
+1. Run a QA bug-fix pass first: fix the missing backup-complete summary dialog and the currently non-working restore flow before new feature or docs work.
+2. Re-test the repaired backup and restore flows on Windows, then update this handoff with exact observed behavior and validation evidence.
+3. Only return to `CP-023` README work after the active live QA blockers are resolved or reduced to clearly documented limitations.
 
 Constraints to keep in view:
 

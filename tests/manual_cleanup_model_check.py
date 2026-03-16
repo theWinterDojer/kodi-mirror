@@ -17,7 +17,7 @@ def main():
 
     selections = build_cleanup_selections(runtime_paths)
     assert len(selections) == 4
-    assert all(selection["selected"] is True for selection in selections)
+    assert all(selection["selected"] is False for selection in selections)
     assert selections[0]["path"] == os.path.normpath("/kodi/home/userdata/Thumbnails")
     assert selections[1]["path"] == os.path.normpath(
         "/kodi/home/userdata/addon_data/plugin.video.themoviedb.helper/blur_v2"
@@ -29,10 +29,10 @@ def main():
 
     formatted = format_cleanup_selections(selections)
     assert formatted == [
-        "[x] Thumbnail cache",
-        "[x] TMDb Helper blur cache",
-        "[x] TMDb Helper crop cache",
-        "[x] Cached addon packages",
+        "[ ] Thumbnail cache",
+        "[ ] TMDb Helper blur cache",
+        "[ ] TMDb Helper crop cache",
+        "[ ] Cached addon packages",
     ]
 
     print("cleanup model ok")

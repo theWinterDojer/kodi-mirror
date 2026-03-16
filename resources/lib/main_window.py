@@ -17,7 +17,12 @@ from resources.lib.cleanup import (
     format_cleanup_selections,
     run_cleanup,
 )
-from resources.lib.destination import DestinationError, save_selected_backup_destination
+from resources.lib.destination import (
+    DestinationError,
+    clear_saved_backup_destination,
+    resolve_default_destination_state,
+    save_selected_backup_destination,
+)
 from resources.lib.restore_archive import RestoreArchiveError, validate_restore_archive
 from resources.lib.restore_preflight import RestorePreflightError, run_restore_preflight
 from resources.lib.restore_stage import RestoreStageError, stage_restore_payload
@@ -67,7 +72,7 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             status_label = self._destination_state["error"]
 
         self.getControl(CONTROL_ID_BACKUP_DESTINATION_PATH).setText(path_label)
-        self.getControl(CONTROL_ID_BACKUP_DESTINATION_STATUS).setLabel(status_label)
+        self.getControl(CONTROL_ID_BACKUP_DESTINATION_STATUS).setText(status_label)
 
     def _refresh_cleanup_display(self):
         cleanup_lines = format_cleanup_selections(self._cleanup_selections)
@@ -75,9 +80,80 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             1 for selection in self._cleanup_selections if selection["selected"]
         )
         self.getControl(CONTROL_ID_CLEANUP_SELECTIONS).setText("[CR]".join(cleanup_lines))
-        self.getControl(CONTROL_ID_CLEANUP_STATUS).setLabel(
-            f"{selected_count} cleanup targets selected by default."
+        if selected_count == 0:
+            status_label = "No cleanup targets selected."
+        elif selected_count == 1:
+            status_label = "1 cleanup target selected."
+        else:
+            status_label = f"{selected_count} cleanup targets selected."
+        self.getControl(CONTROL_ID_CLEANUP_STATUS).setText(status_label)
+
+    def _set_cleanup_selection_state(self, selected_ids):
+        selected_ids = set(selected_ids)
+        for selection in self._cleanup_selections:
+            selection["selected"] = selection["id"] in selected_ids
+        self._refresh_cleanup_display()
+
+    def _edit_cleanup_targets(self):
+        while True:
+            options = [
+                *format_cleanup_selections(self._cleanup_selections),
+                "Select all",
+                "Clear all",
+                "Apply cleanup selection",
+            ]
+            selection_index = xbmcgui.Dialog().select(
+                "Cleanup before backup",
+                options,
+            )
+            if selection_index == -1:
+                return
+
+            if selection_index == len(self._cleanup_selections) + 2:
+                self._refresh_cleanup_display()
+                return
+
+            if selection_index == len(self._cleanup_selections):
+                self._set_cleanup_selection_state(
+                    selection["id"] for selection in self._cleanup_selections
+                )
+                continue
+
+            if selection_index == len(self._cleanup_selections) + 1:
+                self._set_cleanup_selection_state(set())
+                continue
+
+            selected_item = self._cleanup_selections[selection_index]
+            selected_item["selected"] = not selected_item["selected"]
+            self._refresh_cleanup_display()
+
+    def _open_backup_review(self):
+        selected_count = sum(
+            1 for selection in self._cleanup_selections if selection["selected"]
         )
+        destination_path = self._destination_state["path"] or "No backup destination selected."
+        while True:
+            cleanup_label = f"Edit cleanup ({selected_count} selected)"
+            selection_index = xbmcgui.Dialog().select(
+                "Backup",
+                [
+                    "Start backup",
+                    cleanup_label,
+                    "Cancel",
+                ],
+            )
+            if selection_index in (-1, 2):
+                return False
+
+            if selection_index == 0:
+                return True
+
+            if selection_index == 1:
+                self._edit_cleanup_targets()
+                selected_count = sum(
+                    1 for selection in self._cleanup_selections if selection["selected"]
+                )
+                continue
 
     def _browse_destination(self):
         current_path = self._destination_state["path"]
@@ -108,6 +184,39 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             self._addon_name,
             "Backup destination saved.",
             self._destination_state["path"],
+        )
+
+    def _open_settings(self):
+        selection = xbmcgui.Dialog().select(
+            "Settings",
+            [
+                "Change backup destination",
+                "Use platform default destination",
+            ],
+        )
+        if selection == -1:
+            return
+
+        if selection == 0:
+            self._browse_destination()
+            return
+
+        clear_saved_backup_destination(self._addon)
+        self._destination_state = resolve_default_destination_state()
+        self._refresh_destination_display()
+        if self._destination_state["is_ready"]:
+            xbmcgui.Dialog().ok(
+                self._addon_name,
+                "Default destination active.",
+                self._destination_state["path"],
+            )
+            return
+
+        xbmcgui.Dialog().ok(
+            self._addon_name,
+            "Default destination not ready.",
+            self._destination_state["error"],
+            "Choose Backup Destination to save another path.",
         )
 
     def _browse_restore_archive(self):
@@ -194,6 +303,8 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         if control_id == CONTROL_ID_BACKUP:
+            if not self._open_backup_review():
+                return
             progress = BackupProgress(xbmcgui.DialogProgress())
             progress.start("Backup")
             try:
@@ -224,9 +335,6 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                     "Backup did not start.",
                 )
                 return
-
-            removed_count = sum(1 for item in cleanup_results if item["status"] == "removed")
-            skipped_count = sum(1 for item in cleanup_results if item["status"] == "skipped")
 
             try:
                 progress.update(55, "Collecting files for backup.")
@@ -261,9 +369,6 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 "Backup complete.",
                 archive_path,
                 f"Files backed up: {manifest['file_count']}",
-                f"Bytes backed up: {manifest['uncompressed_byte_size']}",
-                f"Cleanup removed: {removed_count}",
-                f"Cleanup skipped: {skipped_count}",
             )
             return
         if control_id == CONTROL_ID_RESTORE:
@@ -271,11 +376,10 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         if control_id == CONTROL_ID_SETTINGS:
-            heading = "Settings"
-        else:
+            self._open_settings()
             return
 
-        xbmcgui.Dialog().ok(self._addon_name, f"{heading} is not implemented yet.")
+        return
 
     def onAction(self, action):
         if action.getId() in (

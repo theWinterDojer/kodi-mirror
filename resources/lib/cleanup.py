@@ -8,28 +8,28 @@ CLEANUP_TARGETS = (
         "label": "Thumbnail cache",
         "root_key": "userdata",
         "relative_path": "Thumbnails",
-        "default_selected": True,
+        "default_selected": False,
     },
     {
         "id": "tmdb_blur",
         "label": "TMDb Helper blur cache",
         "root_key": "userdata",
         "relative_path": "addon_data/plugin.video.themoviedb.helper/blur_v2",
-        "default_selected": True,
+        "default_selected": False,
     },
     {
         "id": "tmdb_crop",
         "label": "TMDb Helper crop cache",
         "root_key": "userdata",
         "relative_path": "addon_data/plugin.video.themoviedb.helper/crop_v2",
-        "default_selected": True,
+        "default_selected": False,
     },
     {
         "id": "addon_packages",
         "label": "Cached addon packages",
         "root_key": "addons",
         "relative_path": "packages",
-        "default_selected": True,
+        "default_selected": False,
     },
 )
 

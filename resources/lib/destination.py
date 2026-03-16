@@ -110,6 +110,10 @@ def get_saved_backup_destination(addon):
     return addon.getSetting(SETTING_BACKUP_DESTINATION).strip()
 
 
+def clear_saved_backup_destination(addon):
+    addon.setSetting(SETTING_BACKUP_DESTINATION, "")
+
+
 def resolve_active_destination_state(addon, environment=None):
     saved_destination = get_saved_backup_destination(addon)
     if saved_destination:

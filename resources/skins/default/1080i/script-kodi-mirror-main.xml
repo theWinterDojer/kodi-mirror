@@ -2,238 +2,330 @@
 <window>
   <defaultcontrol always="true">1001</defaultcontrol>
   <controls>
+    <control type="image">
+      <left>0</left>
+      <top>0</top>
+      <width>1920</width>
+      <height>1080</height>
+      <texture colordiffuse="FF060B10">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>160</left>
+      <top>90</top>
+      <width>1600</width>
+      <height>900</height>
+      <texture colordiffuse="FF10161D">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>160</left>
+      <top>90</top>
+      <width>1600</width>
+      <height>8</height>
+      <texture colordiffuse="FF4FA3E3">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>190</left>
+      <top>130</top>
+      <width>360</width>
+      <height>820</height>
+      <texture colordiffuse="FF17202A">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>580</left>
+      <top>130</top>
+      <width>1150</width>
+      <height>250</height>
+      <texture colordiffuse="FF18212C">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>580</left>
+      <top>410</top>
+      <width>560</width>
+      <height>190</height>
+      <texture colordiffuse="FF18212C">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>1170</left>
+      <top>410</top>
+      <width>560</width>
+      <height>190</height>
+      <texture colordiffuse="FF18212C">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>580</left>
+      <top>630</top>
+      <width>1150</width>
+      <height>320</height>
+      <texture colordiffuse="FF18212C">solid-white.png</texture>
+    </control>
     <control type="group">
-      <left>72</left>
-      <top>52</top>
+      <left>220</left>
+      <top>150</top>
       <control type="label">
         <left>0</left>
         <top>0</top>
-        <width>1776</width>
-        <height>68</height>
-        <font>font14</font>
-        <textcolor>FFFFFFFF</textcolor>
-        <label>KodiMirror</label>
-      </control>
-      <control type="label">
-        <left>0</left>
-        <top>72</top>
-        <width>1776</width>
-        <height>42</height>
-        <font>font13</font>
-        <textcolor>FF7FB7F0</textcolor>
-        <label>Clone the active Kodi state. Back up now, stage restore, apply after restart.</label>
-      </control>
-      <control type="label">
-        <left>0</left>
-        <top>118</top>
-        <width>1776</width>
+        <width>280</width>
         <height>34</height>
         <font>font12</font>
-        <textcolor>FFCFD9E6</textcolor>
-        <label>Remote-first workflow with direct status, explicit failures, and staged restore apply.</label>
+        <textcolor>FF86B7EA</textcolor>
+        <label>KodiMirror</label>
       </control>
-      <control type="group">
+      <control type="textbox">
         <left>0</left>
-        <top>188</top>
-        <control type="label">
-          <left>0</left>
-          <top>0</top>
-          <width>600</width>
-          <height>34</height>
-          <font>font13</font>
-          <textcolor>FFFFFFFF</textcolor>
-          <label>Actions</label>
-        </control>
-        <control type="label">
-          <left>0</left>
-          <top>42</top>
-          <width>600</width>
-          <height>52</height>
-          <font>font12</font>
-          <textcolor>FF9FB7D4</textcolor>
-          <label>Use arrows and OK. Backup runs now. Restore stages first and applies after restart.</label>
-        </control>
+        <top>42</top>
+        <width>280</width>
+        <height>86</height>
+        <font>font14</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <label>Back up or restore this Kodi setup.</label>
+      </control>
+      <control type="textbox">
+        <left>0</left>
+        <top>138</top>
+        <width>280</width>
+        <height>66</height>
+        <font>font12</font>
+        <textcolor>FFB7C7D9</textcolor>
+        <label>Choose one action. Backup runs now. Restore stages now and applies after restart.</label>
+      </control>
+      <control type="label">
+        <left>0</left>
+        <top>228</top>
+        <width>280</width>
+        <height>32</height>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <label>Actions</label>
       </control>
       <control type="grouplist">
         <left>0</left>
-        <top>300</top>
-        <width>600</width>
-        <height>560</height>
-        <itemgap>18</itemgap>
+        <top>278</top>
+        <width>300</width>
+        <height>430</height>
+        <itemgap>14</itemgap>
         <orientation>vertical</orientation>
         <control type="button" id="1001">
-          <width>600</width>
-          <height>104</height>
-          <font>font14</font>
+          <width>300</width>
+          <height>82</height>
+          <font>font13</font>
           <textcolor>FFFFFFFF</textcolor>
-          <focusedcolor>FF101010</focusedcolor>
+          <focusedcolor>FF081018</focusedcolor>
+          <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+          <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
           <label>Backup</label>
         </control>
         <control type="button" id="1002">
-          <width>600</width>
-          <height>104</height>
-          <font>font14</font>
+          <width>300</width>
+          <height>82</height>
+          <font>font13</font>
           <textcolor>FFFFFFFF</textcolor>
-          <focusedcolor>FF101010</focusedcolor>
+          <focusedcolor>FF081018</focusedcolor>
+          <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+          <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
           <label>Restore</label>
         </control>
-        <control type="button" id="1003">
-          <width>600</width>
-          <height>104</height>
-          <font>font14</font>
-          <textcolor>FFFFFFFF</textcolor>
-          <focusedcolor>FF101010</focusedcolor>
-          <label>Settings</label>
-        </control>
         <control type="button" id="1005">
-          <width>600</width>
-          <height>104</height>
-          <font>font14</font>
+          <width>300</width>
+          <height>82</height>
+          <font>font13</font>
           <textcolor>FFFFFFFF</textcolor>
-          <focusedcolor>FF101010</focusedcolor>
+          <focusedcolor>FF081018</focusedcolor>
+          <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+          <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
           <label>Backup Destination</label>
         </control>
-        <control type="button" id="1004">
-          <width>600</width>
-          <height>90</height>
+        <control type="button" id="1003">
+          <width>300</width>
+          <height>82</height>
           <font>font13</font>
-          <textcolor>FFCFD9E6</textcolor>
-          <focusedcolor>FF101010</focusedcolor>
+          <textcolor>FFFFFFFF</textcolor>
+          <focusedcolor>FF081018</focusedcolor>
+          <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+          <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+          <label>Settings</label>
+        </control>
+        <control type="button" id="1004">
+          <width>300</width>
+          <height>64</height>
+          <font>font12</font>
+          <textcolor>FFDFE8F2</textcolor>
+          <focusedcolor>FF081018</focusedcolor>
+          <texturenofocus colordiffuse="FF1E2A36">solid-white.png</texturenofocus>
+          <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
           <label>Close</label>
         </control>
       </control>
-      <control type="group">
-        <left>676</left>
-        <top>188</top>
-        <control type="label">
-          <left>0</left>
-          <top>0</top>
-          <width>1100</width>
-          <height>36</height>
-          <font>font14</font>
-          <textcolor>FFFFFFFF</textcolor>
-          <label>System View</label>
-        </control>
-        <control type="label">
-          <left>0</left>
-          <top>42</top>
-          <width>1100</width>
-          <height>52</height>
-          <font>font12</font>
-          <textcolor>FF9FB7D4</textcolor>
-          <label>Check the active roots, current destination, and cleanup defaults before you run anything.</label>
-        </control>
-        <control type="group">
-          <left>0</left>
-          <top>120</top>
-          <control type="label">
-            <left>0</left>
-            <top>0</top>
-            <width>520</width>
-            <height>32</height>
-            <font>font13</font>
-            <textcolor>FF7FB7F0</textcolor>
-            <label>Userdata Root</label>
-          </control>
-          <control type="textbox" id="1101">
-            <left>0</left>
-            <top>42</top>
-            <width>520</width>
-            <height>170</height>
-            <font>font12</font>
-            <textcolor>FFFFFFFF</textcolor>
-          </control>
-        </control>
-        <control type="group">
-          <left>560</left>
-          <top>120</top>
-          <control type="label">
-            <left>0</left>
-            <top>0</top>
-            <width>520</width>
-            <height>32</height>
-            <font>font13</font>
-            <textcolor>FF7FB7F0</textcolor>
-            <label>Addons Root</label>
-          </control>
-          <control type="textbox" id="1102">
-            <left>0</left>
-            <top>42</top>
-            <width>520</width>
-            <height>170</height>
-            <font>font12</font>
-            <textcolor>FFFFFFFF</textcolor>
-          </control>
-        </control>
-        <control type="group">
-          <left>0</left>
-          <top>374</top>
-          <control type="label">
-            <left>0</left>
-            <top>0</top>
-            <width>1080</width>
-            <height>32</height>
-            <font>font13</font>
-            <textcolor>FF7FB7F0</textcolor>
-            <label>Backup Destination</label>
-          </control>
-          <control type="textbox" id="1103">
-            <left>0</left>
-            <top>42</top>
-            <width>1080</width>
-            <height>74</height>
-            <font>font12</font>
-            <textcolor>FFFFFFFF</textcolor>
-          </control>
-          <control type="label">
-            <left>0</left>
-            <top>136</top>
-            <width>1080</width>
-            <height>28</height>
-            <font>font12</font>
-            <textcolor>FF9FB7D4</textcolor>
-            <label>Status</label>
-          </control>
-          <control type="label" id="1104">
-            <left>0</left>
-            <top>172</top>
-            <width>1080</width>
-            <height>40</height>
-            <font>font12</font>
-            <textcolor>FFFFFFFF</textcolor>
-            <label></label>
-          </control>
-        </control>
-        <control type="group">
-          <left>0</left>
-          <top>620</top>
-          <control type="label">
-            <left>0</left>
-            <top>0</top>
-            <width>1080</width>
-            <height>32</height>
-            <font>font13</font>
-            <textcolor>FF7FB7F0</textcolor>
-            <label>Cleanup Defaults</label>
-          </control>
-          <control type="textbox" id="1105">
-            <left>0</left>
-            <top>42</top>
-            <width>1080</width>
-            <height>140</height>
-            <font>font12</font>
-            <textcolor>FFFFFFFF</textcolor>
-          </control>
-          <control type="label" id="1106">
-            <left>0</left>
-            <top>198</top>
-            <width>1080</width>
-            <height>40</height>
-            <font>font12</font>
-            <textcolor>FFFFFFFF</textcolor>
-            <label></label>
-          </control>
-        </control>
+      <control type="label">
+        <left>0</left>
+        <top>734</top>
+        <width>280</width>
+        <height>28</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Flow</label>
+      </control>
+      <control type="textbox">
+        <left>0</left>
+        <top>770</top>
+        <width>280</width>
+        <height>42</height>
+        <font>font12</font>
+        <textcolor>FFB7C7D9</textcolor>
+        <label>Backup writes a zip now. Restore stages first, then applies after Kodi restarts.</label>
+      </control>
+    </control>
+    <control type="group">
+      <left>610</left>
+      <top>150</top>
+      <control type="label">
+        <left>0</left>
+        <top>0</top>
+        <width>1080</width>
+        <height>34</height>
+        <font>font13</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>System View</label>
+      </control>
+      <control type="textbox">
+        <left>0</left>
+        <top>40</top>
+        <width>1080</width>
+        <height>40</height>
+        <font>font12</font>
+        <textcolor>FFB7C7D9</textcolor>
+        <label>Check the active Kodi roots before you run a backup or stage a restore.</label>
+      </control>
+      <control type="label">
+        <left>20</left>
+        <top>100</top>
+        <width>500</width>
+        <height>30</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Userdata Root</label>
+      </control>
+      <control type="textbox" id="1101">
+        <left>20</left>
+        <top>138</top>
+        <width>500</width>
+        <height>84</height>
+        <font>font12</font>
+        <textcolor>FFFFFFFF</textcolor>
+      </control>
+      <control type="label">
+        <left>560</left>
+        <top>100</top>
+        <width>500</width>
+        <height>30</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Addons Root</label>
+      </control>
+      <control type="textbox" id="1102">
+        <left>560</left>
+        <top>138</top>
+        <width>500</width>
+        <height>84</height>
+        <font>font12</font>
+        <textcolor>FFFFFFFF</textcolor>
+      </control>
+    </control>
+    <control type="group">
+      <left>610</left>
+      <top>430</top>
+      <control type="label">
+        <left>0</left>
+        <top>0</top>
+        <width>520</width>
+        <height>30</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Backup Destination</label>
+      </control>
+      <control type="textbox" id="1103">
+        <left>0</left>
+        <top>38</top>
+        <width>520</width>
+        <height>66</height>
+        <font>font12</font>
+        <textcolor>FFFFFFFF</textcolor>
+      </control>
+      <control type="label">
+        <left>0</left>
+        <top>116</top>
+        <width>520</width>
+        <height>26</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Status</label>
+      </control>
+      <control type="textbox" id="1104">
+        <left>0</left>
+        <top>146</top>
+        <width>520</width>
+        <height>30</height>
+        <font>font12</font>
+        <textcolor>FFFFFFFF</textcolor>
+      </control>
+    </control>
+    <control type="group">
+      <left>1200</left>
+      <top>430</top>
+      <control type="label">
+        <left>0</left>
+        <top>0</top>
+        <width>500</width>
+        <height>30</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Restore</label>
+      </control>
+      <control type="textbox">
+        <left>0</left>
+        <top>38</top>
+        <width>500</width>
+        <height>46</height>
+        <font>font12</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <label>Select a backup zip. KodiMirror stages the restore first.</label>
+      </control>
+      <control type="textbox">
+        <left>0</left>
+        <top>104</top>
+        <width>500</width>
+        <height>60</height>
+        <font>font12</font>
+        <textcolor>FFB7C7D9</textcolor>
+        <label>If the device platform or Kodi version differs, a warning is shown but restore can continue.</label>
+      </control>
+    </control>
+    <control type="group">
+      <left>610</left>
+      <top>650</top>
+      <control type="label">
+        <left>0</left>
+        <top>0</top>
+        <width>1080</width>
+        <height>30</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <label>Cleanup Options</label>
+      </control>
+      <control type="textbox" id="1105">
+        <left>0</left>
+        <top>38</top>
+        <width>1080</width>
+        <height>176</height>
+        <font>font12</font>
+        <textcolor>FFFFFFFF</textcolor>
+      </control>
+      <control type="textbox" id="1106">
+        <left>0</left>
+        <top>226</top>
+        <width>1080</width>
+        <height>36</height>
+        <font>font12</font>
+        <textcolor>FFDFE8F2</textcolor>
       </control>
     </control>
   </controls>
