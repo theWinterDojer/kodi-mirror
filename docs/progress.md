@@ -1,6 +1,6 @@
 # KodiMirror Progress
 
-Last updated: 2026-03-16
+Last updated: 2026-03-17
 
 ## Project Summary
 
@@ -788,6 +788,18 @@ Open items to resolve before implementation starts:
 - `Live QA`: Windows testing confirmed the no-warning restore path now reaches live restore after archive selection without an extra `Start live restore` step
 - `Live QA`: Windows testing confirmed best-effort live restore can complete with a short skipped-file list instead of failing the whole operation, including a run that restored 11585 files and skipped 2 locked addon files
 
+### 2026-03-17
+
+- `UI simplification pass`: compiled the updated main window flow, control constants, addon entry path, and dialog helper imports with `python3 -m py_compile addon.py resources/lib/__init__.py resources/lib/app.py resources/lib/constants.py resources/lib/dialog.py resources/lib/main_window.py`
+- `UI simplification pass`: revalidated the main window XML asset and guarded against the removed redundant destination button, stale staged-restore wording, and removed flow copy with `python3 tests/manual_ui_asset_check.py`
+- `UI simplification pass`: searched the active UI/controller surface for stale staged-restore and removed main-action wording with `rg -n "stages|restart|Backup Destination|Flow|applies after restart|Choose Backup Destination" resources/lib resources/skins/default/1080i tests/manual_ui_asset_check.py`
+- `UI simplification pass`: rebuilt the installable addon zip for live Kodi testing with `python3 tools/build_addon_zip.py`
+- `UI simplification pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Addon metadata pass`: parsed `addon.xml` after adding icon metadata and updating the product text with `python3 -c "import xml.etree.ElementTree as ET; ET.parse('addon.xml')"`
+- `Addon metadata pass`: rebuilt the installable addon zip after adding `resources/icon.png` with `python3 tools/build_addon_zip.py`
+- `Addon metadata pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Addon metadata pass`: confirmed the packaged addon zip includes `script.kodi.mirror/resources/icon.png` with `python3 -c "import zipfile; z=zipfile.ZipFile('dist/script.kodi.mirror-0.1.0.zip'); names=set(z.namelist()); assert 'script.kodi.mirror/resources/icon.png' in names; print('icon packaged ok')"`
+
 ## Change Log
 
 ### 2026-03-15
@@ -856,6 +868,19 @@ Open items to resolve before implementation starts:
 - Removed the extra no-warning restore confirmation step so selecting a valid archive now starts live restore immediately after validation
 - Changed the restore completion dialog to state partial success explicitly when files are skipped during live restore
 
+### 2026-03-17
+
+- Simplified the main window again after review showed the left rail was overcrowded and the screen copy was too dense to read comfortably
+- Removed the redundant `Backup Destination` main action so backup-location changes now live only under `Settings`
+- Removed the `Flow` section and the old source-root path card so the main screen focuses on backup location, restore, and cleanup status only
+- Shortened the main window copy to operational text and removed stale staged-restore wording from the visible UI
+- Changed the cleanup summary so the dashboard shows only selected cleanup items instead of listing every unchecked target on the home screen
+- Removed non-essential success popups when changing or resetting the backup location; the refreshed main screen now carries that state
+- Changed restore warnings into an explicit `Start restore` or `Cancel` selection step when warnings are present
+- Shortened the backup and restore completion dialogs to minimal count-based summaries with skipped-file details left in `kodi.log`
+- Rebuilt the addon package after the UI simplification pass so the updated screen and dialog flow can be tested in Kodi
+- Added `resources/icon.png` from the transparent source art, wired it into addon metadata, and corrected the stale staged-restore summary/description text in `addon.xml`
+
 ## Session Handoff
 
 Latest state:
@@ -892,17 +917,16 @@ Latest state:
 - Live restore now reports restored and skipped results instead of failing the whole restore on locked or unwritable files
 - Restore warning and completion dialogs now describe live restore explicitly instead of referring to staging, restart, or later apply
 - The main Kodi window now renders as a centered opaque modal over a dimmed backdrop instead of as transparent free-floating controls, addressing the unusable PC UI report
-- The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling while preserving the existing workflow and control ids
+- The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling for remote-first use
 - The main Kodi window shell is now fully opaque and uses addon-owned `solid-white.png` media for fills, so the live Kodi interface should no longer bleed through behind the addon UI
-- The main Kodi window now uses wrapped textbox fields for destination status and cleanup status, preventing label clipping when dynamic text is longer than a single line
-- The main Kodi window layout is now simplified into separate source-roots, destination, restore, and cleanup cards to avoid the overlap seen in live Windows testing
+- The main Kodi window now keeps only four primary actions: `Backup`, `Restore`, `Settings`, and `Close`
+- The main Kodi window layout is now simplified into backup-location, restore, and cleanup cards so the home screen does not carry redundant path or flow text
 - Settings now exposes the v1 destination controls instead of the prior placeholder, including the ability to restore the platform default destination
+- Backup location changes now live only under `Settings`, and successful location changes refresh the home screen without an extra confirmation popup
 - Backup now pauses for an explicit confirmation after showing the destination and current cleanup selections, so cleanup and archive creation do not start on the first click
 - Cleanup is now optional by default, with all cleanup targets starting unselected until the user explicitly enables them
-- Backup now opens a cleanup multiselect first and then a single start-confirmation dialog, replacing the previous two-dialog summary flow
-- Backup now uses a stepwise cleanup selector with an explicit `Done` option instead of Kodi's multiselect dialog, so the pre-backup flow has a clear continue path
-- Backup now uses only Kodi `select` dialogs before execution: choose backup mode, optionally toggle cleanup targets, then choose `Start backup`
-- Backup now opens a review loop first: `Start backup`, `Edit cleanup`, `View destination`, or `Cancel`, with cleanup editing moved into a dedicated sub-step and `Cleanup Options` wording reflected in the main UI
+- Backup now uses a stepwise cleanup selector ending in `Apply cleanup selection` instead of Kodi's multiselect dialog, so the pre-backup flow has a clear continue path
+- Backup now uses only Kodi `select` dialogs before execution: review `Start backup`, adjust `Cleanup options`, or cancel
 - Backup review no longer exposes the unused destination-view action, and the cleanup editor now ends with `Apply cleanup selection` at the bottom of the list instead of a top `Done` action
 - Backup completion now uses a minimal success dialog with only the archive path and file count, keeping the post-backup message within Kodi's simpler dialog expectations
 - Backup and restore now emit targeted logs around dialog handoff, archive validation, live restore start, and restore result summary
@@ -912,14 +936,17 @@ Latest state:
 - Restore is now intentionally best-effort live apply, so those locked files are expected skip candidates rather than a reason to keep staged restart logic that does not avoid the same locks
 - Backup now excludes this addon's own addon-data tree, so stale `pending_restore` leftovers from older builds can no longer break backup preflight or archive collection
 - The no-warning restore path now starts live restore immediately after archive selection, removing the extra `Start live restore` prompt
+- Restore warnings now require an explicit `Start restore` selection before the live restore begins when warning conditions are present
+- Restore completion now shows only restored/skipped counts plus a short locked-file note, leaving file-level skip details to `kodi.log`
+- Addon metadata now exposes a packaged icon at `resources/icon.png`, and the addon summary/description now reflect live restore instead of the removed staged-restore flow
 - Live Windows QA now shows a representative best-effort restore result of 11585 restored files and 2 skipped locked addon files, matching the intended partial-success model
 - Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with a top-level `script.kodi.mirror/` folder, `addon.xml` inside that folder, and only the actual addon payload included
 - Compile, live restore, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
 
 What the next session should do:
 
-1. Run one more live Windows restore pass with the rebuilt zip to confirm the updated completion wording reads clearly on-screen when skipped files are present.
-2. If that UX reads well, move on to `CP-023` README work and keep `CP-026` open only for later cross-platform warning validation.
+1. Run a live Kodi UI pass to confirm the simplified main screen, the warning-selection restore prompt, and the shortened completion dialogs read clearly on-screen.
+2. If that live UI pass is clean, move on to `CP-023` README work and keep `CP-026` open for broader cross-platform warning validation.
 3. Only revisit broader restore architecture if best-effort live restore proves materially worse than expected in real usage.
 
 Constraints to keep in view:

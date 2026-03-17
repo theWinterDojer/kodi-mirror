@@ -30,17 +30,14 @@ from resources.lib.restore_live import RestoreLiveError, apply_live_restore
 from resources.lib.restore_preflight import RestorePreflightError, run_restore_preflight
 from resources.lib.restore_warning import RestoreWarningError, build_restore_warnings
 from resources.lib.constants import (
-    CONTROL_ID_ADDONS_PATH,
     CONTROL_ID_BACKUP_DESTINATION_PATH,
     CONTROL_ID_BACKUP_DESTINATION_STATUS,
     CONTROL_ID_BACKUP,
-    CONTROL_ID_BROWSE_DESTINATION,
     CONTROL_ID_CLEANUP_SELECTIONS,
     CONTROL_ID_CLEANUP_STATUS,
     CONTROL_ID_CLOSE,
     CONTROL_ID_RESTORE,
     CONTROL_ID_SETTINGS,
-    CONTROL_ID_USERDATA_PATH,
     MAIN_WINDOW_RESOLUTION,
     MAIN_WINDOW_SKIN,
     MAIN_WINDOW_XML,
@@ -58,8 +55,6 @@ class MainWindow(xbmcgui.WindowXMLDialog):
     def onInit(self):
         self._refresh_destination_display()
         self._refresh_cleanup_display()
-        self.getControl(CONTROL_ID_USERDATA_PATH).setText(self._runtime_paths["userdata"])
-        self.getControl(CONTROL_ID_ADDONS_PATH).setText(self._runtime_paths["addons"])
         self.setFocusId(CONTROL_ID_BACKUP)
 
     def _refresh_destination_display(self):
@@ -77,17 +72,23 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         self.getControl(CONTROL_ID_BACKUP_DESTINATION_STATUS).setText(status_label)
 
     def _refresh_cleanup_display(self):
-        cleanup_lines = format_cleanup_selections(self._cleanup_selections)
-        selected_count = sum(
-            1 for selection in self._cleanup_selections if selection["selected"]
-        )
-        self.getControl(CONTROL_ID_CLEANUP_SELECTIONS).setText("[CR]".join(cleanup_lines))
-        if selected_count == 0:
-            status_label = "No cleanup targets selected."
-        elif selected_count == 1:
-            status_label = "1 cleanup target selected."
+        selected_labels = [
+            selection["label"]
+            for selection in self._cleanup_selections
+            if selection["selected"]
+        ]
+        if selected_labels:
+            cleanup_label = "[CR]".join(selected_labels)
+            count = len(selected_labels)
+            if count == 1:
+                status_label = "1 cleanup item selected."
+            else:
+                status_label = f"{count} cleanup items selected."
         else:
-            status_label = f"{selected_count} cleanup targets selected."
+            cleanup_label = "No cleanup selected."
+            status_label = "Choose cleanup items when Backup starts."
+
+        self.getControl(CONTROL_ID_CLEANUP_SELECTIONS).setText(cleanup_label)
         self.getControl(CONTROL_ID_CLEANUP_STATUS).setText(status_label)
 
     def _set_cleanup_selection_state(self, selected_ids):
@@ -130,12 +131,14 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             self._refresh_cleanup_display()
 
     def _open_backup_review(self):
-        selected_count = sum(
-            1 for selection in self._cleanup_selections if selection["selected"]
-        )
-        destination_path = self._destination_state["path"] or "No backup destination selected."
         while True:
-            cleanup_label = f"Edit cleanup ({selected_count} selected)"
+            selected_count = sum(
+                1 for selection in self._cleanup_selections if selection["selected"]
+            )
+            if selected_count == 0:
+                cleanup_label = "Cleanup options"
+            else:
+                cleanup_label = f"Cleanup options ({selected_count})"
             selection_index = xbmcgui.Dialog().select(
                 "Backup",
                 [
@@ -184,23 +187,17 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             return
 
         self._refresh_destination_display()
-        xbmcgui.Dialog().ok(
-            self._addon_name,
-            compose_dialog_text(
-                "Backup destination saved.",
-                self._destination_state["path"],
-            ),
-        )
 
     def _open_settings(self):
         selection = xbmcgui.Dialog().select(
             "Settings",
             [
-                "Change backup destination",
-                "Use platform default destination",
+                "Change backup location",
+                "Use platform default",
+                "Cancel",
             ],
         )
-        if selection == -1:
+        if selection in (-1, 2):
             return
 
         if selection == 0:
@@ -210,24 +207,15 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         clear_saved_backup_destination(self._addon)
         self._destination_state = resolve_default_destination_state()
         self._refresh_destination_display()
-        if self._destination_state["is_ready"]:
+        if not self._destination_state["is_ready"]:
             xbmcgui.Dialog().ok(
                 self._addon_name,
                 compose_dialog_text(
-                    "Default destination active.",
-                    self._destination_state["path"],
+                    "Default location not ready.",
+                    self._destination_state["error"],
+                    "Open Settings to choose another location.",
                 ),
             )
-            return
-
-        xbmcgui.Dialog().ok(
-            self._addon_name,
-            compose_dialog_text(
-                "Default destination not ready.",
-                self._destination_state["error"],
-                "Choose Backup Destination to save another path.",
-            ),
-        )
 
     def _browse_restore_archive(self):
         start_path = self._destination_state["path"] or ""
@@ -307,21 +295,22 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             log.info("Restore warnings generated: none")
 
         if warning_result["warnings"]:
-            dialog_lines = [
-                "Live restore runs now.",
-                "Files Kodi is using may stay unchanged.",
-            ]
-            dialog_lines.extend(warning_result["warnings"])
-            dialog_lines.append("Restore can continue.")
-            dialog_lines.append(f"Archive entries: {archive_details['entry_count']}")
-            dialog_lines.append(archive_details["path"])
-            xbmcgui.Dialog().ok(
-                self._addon_name,
-                compose_dialog_text(
-                    "Restore warnings.",
-                    *dialog_lines,
-                ),
-            )
+            while True:
+                selection = xbmcgui.Dialog().select(
+                    "Restore warnings",
+                    [
+                        "Start restore",
+                        "Cancel",
+                        "Warnings:",
+                        "Files Kodi is using may stay unchanged.",
+                        *warning_result["warnings"],
+                    ],
+                )
+                if selection in (-1, 1):
+                    log.info("Restore canceled after warning review")
+                    return
+                if selection == 0:
+                    break
 
         progress = BackupProgress(xbmcgui.DialogProgress())
         progress.start("Restore")
@@ -370,20 +359,18 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             )
         if restore_result["skipped_file_count"] > 0:
             result_lines = [
-                f"Restore completed with {restore_result['skipped_file_count']} skipped files.",
-                f"Files restored: {restore_result['restored_file_count']}",
-                f"Files skipped: {restore_result['skipped_file_count']}",
+                "Restore finished.",
+                f"Restored: {restore_result['restored_file_count']}",
+                f"Skipped: {restore_result['skipped_file_count']}",
             ]
         else:
             result_lines = [
-                "Restore completed successfully.",
-                f"Files restored: {restore_result['restored_file_count']}",
-                "Files skipped: 0",
+                "Restore finished.",
+                f"Restored: {restore_result['restored_file_count']}",
+                "Skipped: 0",
             ]
         if restore_result["skipped_file_count"] > 0:
             result_lines.append("Some files stayed unchanged while Kodi was running.")
-            for skipped_entry in restore_result["skipped_entries"][:3]:
-                result_lines.append(skipped_entry["archive_path"])
             result_lines.append("See kodi.log for skipped details.")
         xbmcgui.Dialog().ok(
             self._addon_name,
@@ -393,10 +380,6 @@ class MainWindow(xbmcgui.WindowXMLDialog):
     def onClick(self, control_id):
         if control_id == CONTROL_ID_CLOSE:
             self.close()
-            return
-
-        if control_id == CONTROL_ID_BROWSE_DESTINATION:
-            self._browse_destination()
             return
 
         if control_id == CONTROL_ID_BACKUP:
@@ -508,9 +491,9 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             xbmcgui.Dialog().ok(
                 self._addon_name,
                 compose_dialog_text(
-                    "Backup complete.",
+                    "Backup finished.",
                     archive_path,
-                    f"Files backed up: {manifest['file_count']}",
+                    f"Files: {manifest['file_count']}",
                 ),
             )
             log.info("Backup complete dialog closed")

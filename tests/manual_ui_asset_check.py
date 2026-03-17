@@ -53,6 +53,10 @@ def main():
     with open(xml_path, "r", encoding="utf-8") as xml_file:
         xml_text = xml_file.read()
     assert ">white.png<" not in xml_text
+    assert "Backup Destination" not in xml_text
+    assert "Restore stages" not in xml_text
+    assert ">Flow<" not in xml_text
+    assert "applies after restart" not in xml_text
     print("ui asset ok")
 
 

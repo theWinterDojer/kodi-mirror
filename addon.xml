@@ -10,11 +10,14 @@
     <provides>executable</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Remote-friendly Kodi backup and staged restore.</summary>
-    <description lang="en_GB">KodiMirror backs up the active userdata and addons roots into a ZIP archive and stages replace-style restore apply after restart.</description>
+    <summary lang="en_GB">Remote-friendly Kodi backup and live restore.</summary>
+    <description lang="en_GB">KodiMirror backs up the active userdata and addons roots into a ZIP archive and applies best-effort live restore with clear skipped-file reporting.</description>
     <platform>all</platform>
     <license>MIT</license>
     <source>https://github.com/dojer/backup-kodi</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
     <news>Initial packaging baseline.</news>
   </extension>
 </addon>
