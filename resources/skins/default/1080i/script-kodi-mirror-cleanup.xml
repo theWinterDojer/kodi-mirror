@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+  <defaultcontrol always="true">1201</defaultcontrol>
+  <controls>
+    <control type="image">
+      <left>0</left>
+      <top>0</top>
+      <width>1920</width>
+      <height>1080</height>
+      <texture colordiffuse="CC060B10">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>300</left>
+      <top>140</top>
+      <width>1320</width>
+      <height>800</height>
+      <texture colordiffuse="FF10161D">solid-white.png</texture>
+    </control>
+    <control type="image">
+      <left>300</left>
+      <top>140</top>
+      <width>1320</width>
+      <height>8</height>
+      <texture colordiffuse="FF4FA3E3">solid-white.png</texture>
+    </control>
+    <control type="group">
+      <left>360</left>
+      <top>190</top>
+      <control type="label">
+        <left>0</left>
+        <top>0</top>
+        <width>1200</width>
+        <height>48</height>
+        <font>font16</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <label>Cleanup before backup</label>
+      </control>
+      <control type="textbox">
+        <left>0</left>
+        <top>62</top>
+        <width>1200</width>
+        <height>34</height>
+        <font>font12</font>
+        <textcolor>FFB7C7D9</textcolor>
+        <label>Choose optional cleanup items, then apply and return to Backup.</label>
+      </control>
+
+      <control type="button" id="1201">
+        <left>0</left>
+        <top>136</top>
+        <width>900</width>
+        <height>82</height>
+        <onup>1221</onup>
+        <ondown>1202</ondown>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+      </control>
+      <control type="label" id="1211">
+        <left>940</left>
+        <top>160</top>
+        <width>220</width>
+        <height>36</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <align>right</align>
+      </control>
+
+      <control type="button" id="1202">
+        <left>0</left>
+        <top>236</top>
+        <width>900</width>
+        <height>82</height>
+        <onup>1201</onup>
+        <ondown>1203</ondown>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+      </control>
+      <control type="label" id="1212">
+        <left>940</left>
+        <top>260</top>
+        <width>220</width>
+        <height>36</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <align>right</align>
+      </control>
+
+      <control type="button" id="1203">
+        <left>0</left>
+        <top>336</top>
+        <width>900</width>
+        <height>82</height>
+        <onup>1202</onup>
+        <ondown>1204</ondown>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+      </control>
+      <control type="label" id="1213">
+        <left>940</left>
+        <top>360</top>
+        <width>220</width>
+        <height>36</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <align>right</align>
+      </control>
+
+      <control type="button" id="1204">
+        <left>0</left>
+        <top>436</top>
+        <width>900</width>
+        <height>82</height>
+        <onup>1203</onup>
+        <ondown>1221</ondown>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+      </control>
+      <control type="label" id="1214">
+        <left>940</left>
+        <top>460</top>
+        <width>220</width>
+        <height>36</height>
+        <font>font12</font>
+        <textcolor>FF86B7EA</textcolor>
+        <align>right</align>
+      </control>
+
+      <control type="button" id="1221">
+        <left>0</left>
+        <top>584</top>
+        <width>360</width>
+        <height>82</height>
+        <onup>1204</onup>
+        <ondown>1201</ondown>
+        <onright>1222</onright>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+        <label>Select all</label>
+      </control>
+      <control type="button" id="1222">
+        <left>400</left>
+        <top>584</top>
+        <width>360</width>
+        <height>82</height>
+        <onup>1204</onup>
+        <ondown>1201</ondown>
+        <onleft>1221</onleft>
+        <onright>1223</onright>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF263748">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+        <label>Apply</label>
+      </control>
+      <control type="button" id="1223">
+        <left>800</left>
+        <top>584</top>
+        <width>360</width>
+        <height>82</height>
+        <onup>1204</onup>
+        <ondown>1201</ondown>
+        <onleft>1222</onleft>
+        <font>font13</font>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>FF081018</focusedcolor>
+        <texturenofocus colordiffuse="FF1E2A36">solid-white.png</texturenofocus>
+        <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
+        <label>Cancel</label>
+      </control>
+    </control>
+  </controls>
+</window>

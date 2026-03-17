@@ -799,6 +799,41 @@ Open items to resolve before implementation starts:
 - `Addon metadata pass`: rebuilt the installable addon zip after adding `resources/icon.png` with `python3 tools/build_addon_zip.py`
 - `Addon metadata pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
 - `Addon metadata pass`: confirmed the packaged addon zip includes `script.kodi.mirror/resources/icon.png` with `python3 -c "import zipfile; z=zipfile.ZipFile('dist/script.kodi.mirror-0.1.0.zip'); names=set(z.namelist()); assert 'script.kodi.mirror/resources/icon.png' in names; print('icon packaged ok')"`
+- `UI containment pass`: compiled the updated main window controller after tightening the cleanup summary text with `python3 -m py_compile resources/lib/main_window.py`
+- `UI containment pass`: revalidated the main window XML asset after rebalancing card heights, shortening copy, and standardizing the action rail with `python3 tests/manual_ui_asset_check.py`
+- `Cleanup window pass`: compiled the new cleanup window module, the updated main window wiring, and the UI asset check with `python3 -m py_compile resources/lib/constants.py resources/lib/main_window.py resources/lib/cleanup_window.py tests/manual_ui_asset_check.py`
+- `Cleanup window pass`: revalidated the main window and cleanup window XML assets with `python3 tests/manual_ui_asset_check.py`
+- `Cleanup window pass`: searched the active cleanup UI surface to confirm `Select all` and `Apply` remain while `Clear all` and `Apply cleanup selection` are gone with `rg -n "Clear all|Apply cleanup selection|Cleanup before backup|Select all|Apply" resources/lib resources/skins/default/1080i tests/manual_ui_asset_check.py`
+- `Cleanup window pass`: rebuilt the installable addon zip after replacing the stock cleanup dialog with the custom cleanup window via `python3 tools/build_addon_zip.py`
+- `Cleanup window pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Display-name and layout pass`: parsed `addon.xml` after renaming the addon to `Kodi Mirror` with `python3 -c "import xml.etree.ElementTree as ET; ET.parse('addon.xml')"`
+- `Display-name and layout pass`: compiled the updated main window, cleanup window, constants, and UI asset check with `python3 -m py_compile resources/lib/main_window.py resources/lib/cleanup_window.py resources/lib/constants.py tests/manual_ui_asset_check.py`
+- `Display-name and layout pass`: revalidated the main window and cleanup window XML assets after increasing text regions and moving the action rail down with `python3 tests/manual_ui_asset_check.py`
+- `Display-name and layout pass`: rebuilt the installable addon zip after the rename/layout changes with `python3 tools/build_addon_zip.py`
+- `Display-name and layout pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Remote navigation pass`: revalidated the main window and cleanup window XML assets after adding explicit D-pad focus chains with `python3 tests/manual_ui_asset_check.py`
+- `Remote navigation pass`: rebuilt the installable addon zip after adding explicit focus movement for the main action rail and cleanup window via `python3 tools/build_addon_zip.py`
+- `Remote navigation pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Remote navigation pass`: confirmed explicit `onup` / `ondown` navigation on the main action rail and explicit vertical/horizontal navigation on the cleanup window footer with `rg -n "onup|ondown|onleft|onright" resources/skins/default/1080i/script-kodi-mirror-main.xml resources/skins/default/1080i/script-kodi-mirror-cleanup.xml`
+- `Restore cancel fix`: compiled the updated main window restore-browse flow with `python3 -m py_compile resources/lib/main_window.py`
+- `Restore cancel fix`: rebuilt the installable addon zip after treating a returned directory path from the restore file picker as cancel instead of failure with `python3 tools/build_addon_zip.py`
+- `Restore cancel fix`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Restore cancel fix`: confirmed the restore browse handler now logs both empty-path cancel and directory-path cancel paths with `rg -n "Restore archive browse returned directory path|Restore archive browse canceled" resources/lib/main_window.py`
+- `Backup location overflow fix`: revalidated the main window XML asset after expanding the backup-location card and status text region with `python3 tests/manual_ui_asset_check.py`
+- `Backup location overflow fix`: rebuilt the installable addon zip after moving the restore card down to keep backup-location status text contained with `python3 tools/build_addon_zip.py`
+- `Backup location overflow fix`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Right-side card spacing fix`: revalidated the main window XML asset after increasing the restore-card height and moving the cleanup card down to stop section overlap with `python3 tests/manual_ui_asset_check.py`
+- `Right-side card spacing fix`: rebuilt the installable addon zip after re-spacing the lower right-side cards with `python3 tools/build_addon_zip.py`
+- `Right-side card spacing fix`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Backup folder label pass`: revalidated the main window XML asset after renaming the backup-location labels for path/status clarity with `python3 tests/manual_ui_asset_check.py`
+- `Backup folder label pass`: rebuilt the installable addon zip after clarifying the backup-folder labels with `python3 tools/build_addon_zip.py`
+- `Backup folder label pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Status label tweak`: revalidated the main window XML asset after changing `Folder Status` back to `Status` with `python3 tests/manual_ui_asset_check.py`
+- `Status label tweak`: rebuilt the installable addon zip after the wording revert with `python3 tools/build_addon_zip.py`
+- `Status label tweak`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Live QA`: Windows backup completed successfully from the updated UI flow with four cleanup targets selected, writing `C:\Users\Bryce\Desktop\KodiBackup-20260317-063003.zip` and logging `file_count=11574`
+- `Live QA`: Windows live restore completed successfully from `C:\Users\Bryce\Desktop\KodiBackup-20260317-063003.zip` with `Restore warnings generated: none`, `restored_file_count=11530`, and `skipped_file_count=2`
+- `Live QA`: Windows live restore skip reporting captured the expected locked-file behavior for `addons/peripheral.joystick/peripheral.joystick.dll` and `addons/service.subtitles.opensubtitles-com/resources/lib/os/model/response/.placeholder`
 
 ## Change Log
 
@@ -870,84 +905,33 @@ Open items to resolve before implementation starts:
 
 ### 2026-03-17
 
-- Simplified the main window again after review showed the left rail was overcrowded and the screen copy was too dense to read comfortably
-- Removed the redundant `Backup Destination` main action so backup-location changes now live only under `Settings`
-- Removed the `Flow` section and the old source-root path card so the main screen focuses on backup location, restore, and cleanup status only
-- Shortened the main window copy to operational text and removed stale staged-restore wording from the visible UI
-- Changed the cleanup summary so the dashboard shows only selected cleanup items instead of listing every unchecked target on the home screen
-- Removed non-essential success popups when changing or resetting the backup location; the refreshed main screen now carries that state
-- Changed restore warnings into an explicit `Start restore` or `Cancel` selection step when warnings are present
-- Shortened the backup and restore completion dialogs to minimal count-based summaries with skipped-file details left in `kodi.log`
-- Rebuilt the addon package after the UI simplification pass so the updated screen and dialog flow can be tested in Kodi
-- Added `resources/icon.png` from the transparent source art, wired it into addon metadata, and corrected the stale staged-restore summary/description text in `addon.xml`
+- Simplified the main window into a cleaner remote-first layout with four primary actions, clearer card structure, corrected text containment, and short operational copy
+- Replaced the stock cleanup select dialog with a custom cleanup window that keeps the four cleanup items visible, preserves `Select all`, removes `Clear all`, and returns to the backup review flow on `Apply`
+- Added explicit D-pad navigation to the main action rail and cleanup window so the flow works on Android TV / Fire TV class devices without mouse input
+- Renamed the display name to `Kodi Mirror`, added a packaged icon, and corrected stale addon metadata text that still described staged restore
+- Fixed restore browse cancel handling so backing out of archive selection no longer shows a false `Backup archive does not exist` error
+- Live Windows QA now confirms the updated UI can run a full backup and same-machine live restore successfully, with expected locked-file skips reported instead of failing the restore
 
 ## Session Handoff
 
 Latest state:
 
-- `CP-001` is complete
-- `CP-002` is complete
-- `CP-003` is complete
-- `CP-004` is complete
-- `CP-005` is complete
-- `CP-006` is complete
-- `CP-007` is complete
-- `CP-008` is complete
-- `CP-009` is complete
-- `CP-010` is complete
-- `CP-011` is complete
-- `CP-012` is complete
-- `CP-013` is complete
-- `CP-014` is complete
-- `CP-015` is complete
-- `CP-016` is complete
-- `CP-017` is complete
-- `CP-018` is complete
-- `CP-019` is complete
-- `CP-020` is complete
-- `CP-021` is complete
-- `CP-022` is complete
-- `CP-024` is complete
-- Backup now shows stage-based progress updates and reports final success or failure against the real archive workflow
-- Restore now lets the user select a backup ZIP and validates that it is readable and contains `backup_manifest.json` before later restore work begins
-- Restore now checks manifest JSON structure, required restore roots, and live target-root readiness before any file writes begin
-- Restore now warns when the backup platform family differs or the Kodi major version differs, while keeping restore allowed for later steps
-- Restore now applies live directly from the selected zip, overwrites files where possible, leaves non-backed-up live files untouched, and refuses unsafe archive entries
-- Live restore skips this addon's live `addons/script.kodi.mirror/` and `userdata/addon_data/script.kodi.mirror/` trees so the running addon does not self-overwrite
-- Live restore now reports restored and skipped results instead of failing the whole restore on locked or unwritable files
-- Restore warning and completion dialogs now describe live restore explicitly instead of referring to staging, restart, or later apply
-- The main Kodi window now renders as a centered opaque modal over a dimmed backdrop instead of as transparent free-floating controls, addressing the unusable PC UI report
-- The main Kodi window now presents a clearer action rail and right-side dashboard with improved visual hierarchy, spacing, and section labeling for remote-first use
-- The main Kodi window shell is now fully opaque and uses addon-owned `solid-white.png` media for fills, so the live Kodi interface should no longer bleed through behind the addon UI
-- The main Kodi window now keeps only four primary actions: `Backup`, `Restore`, `Settings`, and `Close`
-- The main Kodi window layout is now simplified into backup-location, restore, and cleanup cards so the home screen does not carry redundant path or flow text
-- Settings now exposes the v1 destination controls instead of the prior placeholder, including the ability to restore the platform default destination
-- Backup location changes now live only under `Settings`, and successful location changes refresh the home screen without an extra confirmation popup
-- Backup now pauses for an explicit confirmation after showing the destination and current cleanup selections, so cleanup and archive creation do not start on the first click
-- Cleanup is now optional by default, with all cleanup targets starting unselected until the user explicitly enables them
-- Backup now uses a stepwise cleanup selector ending in `Apply cleanup selection` instead of Kodi's multiselect dialog, so the pre-backup flow has a clear continue path
-- Backup now uses only Kodi `select` dialogs before execution: review `Start backup`, adjust `Cleanup options`, or cancel
-- Backup review no longer exposes the unused destination-view action, and the cleanup editor now ends with `Apply cleanup selection` at the bottom of the list instead of a top `Done` action
-- Backup completion now uses a minimal success dialog with only the archive path and file count, keeping the post-backup message within Kodi's simpler dialog expectations
-- Backup and restore now emit targeted logs around dialog handoff, archive validation, live restore start, and restore result summary
-- Previous live Windows QA exposed three concrete blockers now fixed in code: a backup-flow `KeyError`, invalid multi-argument `Dialog().ok(...)` calls, and restore-staging failure on long Windows paths
-- Backup is now confirmed working on live Windows, including the backup-complete confirmation dialog
-- Live Windows QA established the key restore constraint: active addon files such as `addons/peripheral.joystick/peripheral.joystick.dll` can stay locked while Kodi is running
-- Restore is now intentionally best-effort live apply, so those locked files are expected skip candidates rather than a reason to keep staged restart logic that does not avoid the same locks
-- Backup now excludes this addon's own addon-data tree, so stale `pending_restore` leftovers from older builds can no longer break backup preflight or archive collection
-- The no-warning restore path now starts live restore immediately after archive selection, removing the extra `Start live restore` prompt
-- Restore warnings now require an explicit `Start restore` selection before the live restore begins when warning conditions are present
-- Restore completion now shows only restored/skipped counts plus a short locked-file note, leaving file-level skip details to `kodi.log`
-- Addon metadata now exposes a packaged icon at `resources/icon.png`, and the addon summary/description now reflect live restore instead of the removed staged-restore flow
-- Live Windows QA now shows a representative best-effort restore result of 11585 restored files and 2 skipped locked addon files, matching the intended partial-success model
-- Packaging now produces `dist/script.kodi.mirror-0.1.0.zip` with a top-level `script.kodi.mirror/` folder, `addon.xml` inside that folder, and only the actual addon payload included
-- Compile, live restore, restore warning, restore preflight, restore archive validation, backup archive, manifest, cleanup execution, cleanup model, preflight, destination, persistence, and XML asset validation have been recorded in the QA ledger
+- `CP-001` through `CP-022` are complete, and `CP-024` is complete.
+- Windows now has strong live QA evidence for the normal path: backup succeeds, same-machine live restore succeeds, and locked files are reported as skips instead of failing the operation.
+- Backup and restore flows are implemented end to end, including manifest validation, restore preflight, live overwrite-only apply, self-exclusion, and skip reporting for locked or unwritable files.
+- The main window is now a remote-first modal with a simplified action rail and three status cards for backup folder, restore, and cleanup.
+- Cleanup now uses a custom Kodi-styled window instead of the stock select dialog, with explicit D-pad navigation and an `Apply` return path to the backup review step.
+- Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
+- User-facing metadata and branding now use `Kodi Mirror`, and the addon zip includes the packaged icon at `resources/icon.png`.
+- Packaging continues to produce `dist/script.kodi.mirror-0.1.0.zip` with the correct top-level addon-folder layout.
+- Open work is now concentrated on `CP-023`, `CP-025`, `CP-026`, and `CP-027`.
 
 What the next session should do:
 
-1. Run a live Kodi UI pass to confirm the simplified main screen, the warning-selection restore prompt, and the shortened completion dialogs read clearly on-screen.
-2. If that live UI pass is clean, move on to `CP-023` README work and keep `CP-026` open for broader cross-platform warning validation.
-3. Only revisit broader restore architecture if best-effort live restore proves materially worse than expected in real usage.
+1. Complete `CP-023` by writing the evergreen README now that Windows backup/live-restore behavior is confirmed.
+2. Run `CP-025` Android / Fire TV destination and permission validation on target hardware.
+3. Keep `CP-026` open for broader cross-platform warning validation, especially the mismatch-warning path that same-machine Windows restore does not exercise.
+4. Prepare `CP-027` once README and remaining platform validation evidence are in place.
 
 Constraints to keep in view:
 

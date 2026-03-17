@@ -34,21 +34,21 @@
       <left>580</left>
       <top>130</top>
       <width>1150</width>
-      <height>250</height>
+      <height>320</height>
       <texture colordiffuse="FF18212C">solid-white.png</texture>
     </control>
     <control type="image">
       <left>580</left>
-      <top>400</top>
+      <top>470</top>
       <width>1150</width>
       <height>160</height>
       <texture colordiffuse="FF18212C">solid-white.png</texture>
     </control>
     <control type="image">
       <left>580</left>
-      <top>590</top>
+      <top>650</top>
       <width>1150</width>
-      <height>360</height>
+      <height>300</height>
       <texture colordiffuse="FF18212C">solid-white.png</texture>
     </control>
     <control type="group">
@@ -61,27 +61,29 @@
         <height>34</height>
         <font>font12</font>
         <textcolor>FF86B7EA</textcolor>
-        <label>KodiMirror</label>
+        <label>Kodi Mirror</label>
       </control>
       <control type="textbox">
         <left>0</left>
         <top>42</top>
         <width>280</width>
-        <height>76</height>
+        <height>108</height>
         <font>font14</font>
         <textcolor>FFFFFFFF</textcolor>
         <label>Back up or restore this Kodi setup.</label>
       </control>
       <control type="grouplist">
         <left>0</left>
-        <top>150</top>
+        <top>180</top>
         <width>300</width>
-        <height>370</height>
+        <height>382</height>
         <itemgap>14</itemgap>
         <orientation>vertical</orientation>
         <control type="button" id="1001">
           <width>300</width>
           <height>82</height>
+          <onup>1004</onup>
+          <ondown>1002</ondown>
           <font>font13</font>
           <textcolor>FFFFFFFF</textcolor>
           <focusedcolor>FF081018</focusedcolor>
@@ -92,6 +94,8 @@
         <control type="button" id="1002">
           <width>300</width>
           <height>82</height>
+          <onup>1001</onup>
+          <ondown>1003</ondown>
           <font>font13</font>
           <textcolor>FFFFFFFF</textcolor>
           <focusedcolor>FF081018</focusedcolor>
@@ -102,6 +106,8 @@
         <control type="button" id="1003">
           <width>300</width>
           <height>82</height>
+          <onup>1002</onup>
+          <ondown>1004</ondown>
           <font>font13</font>
           <textcolor>FFFFFFFF</textcolor>
           <focusedcolor>FF081018</focusedcolor>
@@ -111,9 +117,11 @@
         </control>
         <control type="button" id="1004">
           <width>300</width>
-          <height>64</height>
-          <font>font12</font>
-          <textcolor>FFDFE8F2</textcolor>
+          <height>82</height>
+          <onup>1003</onup>
+          <ondown>1001</ondown>
+          <font>font13</font>
+          <textcolor>FFFFFFFF</textcolor>
           <focusedcolor>FF081018</focusedcolor>
           <texturenofocus colordiffuse="FF1E2A36">solid-white.png</texturenofocus>
           <texturefocus colordiffuse="FF7FB7F0">solid-white.png</texturefocus>
@@ -131,37 +139,37 @@
         <height>34</height>
         <font>font13</font>
         <textcolor>FF86B7EA</textcolor>
-        <label>Backup Location</label>
+        <label>Backup Folder</label>
       </control>
       <control type="textbox">
         <left>0</left>
         <top>40</top>
         <width>1080</width>
-        <height>34</height>
+        <height>36</height>
         <font>font12</font>
         <textcolor>FFB7C7D9</textcolor>
-        <label>Open Settings to change the backup location.</label>
+        <label>Change this in Settings.</label>
       </control>
       <control type="label">
         <left>0</left>
-        <top>94</top>
+        <top>92</top>
         <width>1080</width>
         <height>26</height>
         <font>font12</font>
         <textcolor>FF86B7EA</textcolor>
-        <label>Current Location</label>
+        <label>Folder Path</label>
       </control>
       <control type="textbox" id="1101">
         <left>0</left>
         <top>126</top>
         <width>1080</width>
-        <height>44</height>
+        <height>62</height>
         <font>font12</font>
         <textcolor>FFFFFFFF</textcolor>
       </control>
       <control type="label">
         <left>0</left>
-        <top>184</top>
+        <top>208</top>
         <width>1080</width>
         <height>26</height>
         <font>font12</font>
@@ -170,16 +178,16 @@
       </control>
       <control type="textbox" id="1102">
         <left>0</left>
-        <top>216</top>
+        <top>242</top>
         <width>1080</width>
-        <height>32</height>
+        <height>58</height>
         <font>font12</font>
         <textcolor>FFFFFFFF</textcolor>
       </control>
     </control>
     <control type="group">
       <left>610</left>
-      <top>400</top>
+      <top>490</top>
       <control type="label">
         <left>0</left>
         <top>0</top>
@@ -193,24 +201,24 @@
         <left>0</left>
         <top>40</top>
         <width>1080</width>
-        <height>34</height>
+        <height>32</height>
         <font>font12</font>
         <textcolor>FFFFFFFF</textcolor>
-        <label>Select a backup zip to restore now.</label>
+        <label>Select a backup zip to restore.</label>
       </control>
       <control type="textbox">
         <left>0</left>
-        <top>88</top>
+        <top>82</top>
         <width>1080</width>
         <height>56</height>
         <font>font12</font>
         <textcolor>FFB7C7D9</textcolor>
-        <label>KodiMirror warns about platform or Kodi version differences and reports skipped files at the end.</label>
+        <label>Warnings are shown for platform or Kodi version differences.</label>
       </control>
     </control>
     <control type="group">
       <left>610</left>
-      <top>590</top>
+      <top>670</top>
       <control type="label">
         <left>0</left>
         <top>0</top>
@@ -224,24 +232,24 @@
         <left>0</left>
         <top>40</top>
         <width>1080</width>
-        <height>34</height>
+        <height>32</height>
         <font>font12</font>
         <textcolor>FFB7C7D9</textcolor>
-        <label>Choose cleanup items when Backup starts.</label>
+        <label>Choose items when Backup starts.</label>
       </control>
       <control type="textbox" id="1103">
         <left>0</left>
-        <top>92</top>
+        <top>88</top>
         <width>1080</width>
-        <height>176</height>
+        <height>86</height>
         <font>font12</font>
         <textcolor>FFFFFFFF</textcolor>
       </control>
       <control type="textbox" id="1104">
         <left>0</left>
-        <top>282</top>
+        <top>190</top>
         <width>1080</width>
-        <height>36</height>
+        <height>42</height>
         <font>font12</font>
         <textcolor>FFDFE8F2</textcolor>
       </control>

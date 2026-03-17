@@ -1,3 +1,5 @@
+import os
+
 import xbmcgui
 
 from resources.lib import log
@@ -15,9 +17,9 @@ from resources.lib.backup_preflight import BackupPreflightError, run_backup_pref
 from resources.lib.cleanup import (
     CleanupError,
     build_cleanup_selections,
-    format_cleanup_selections,
     run_cleanup,
 )
+from resources.lib.cleanup_window import open_cleanup_window
 from resources.lib.dialog import compose_dialog_text
 from resources.lib.destination import (
     DestinationError,
@@ -78,15 +80,18 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             if selection["selected"]
         ]
         if selected_labels:
-            cleanup_label = "[CR]".join(selected_labels)
             count = len(selected_labels)
+            if count <= 2:
+                cleanup_label = "[CR]".join(selected_labels)
+            else:
+                cleanup_label = "[CR]".join(selected_labels[:2] + [f"+ {count - 2} more"])
             if count == 1:
                 status_label = "1 cleanup item selected."
             else:
                 status_label = f"{count} cleanup items selected."
         else:
             cleanup_label = "No cleanup selected."
-            status_label = "Choose cleanup items when Backup starts."
+            status_label = ""
 
         self.getControl(CONTROL_ID_CLEANUP_SELECTIONS).setText(cleanup_label)
         self.getControl(CONTROL_ID_CLEANUP_STATUS).setText(status_label)
@@ -98,37 +103,13 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         self._refresh_cleanup_display()
 
     def _edit_cleanup_targets(self):
-        while True:
-            options = [
-                *format_cleanup_selections(self._cleanup_selections),
-                "Select all",
-                "Clear all",
-                "Apply cleanup selection",
-            ]
-            selection_index = xbmcgui.Dialog().select(
-                "Cleanup before backup",
-                options,
-            )
-            if selection_index == -1:
-                return
-
-            if selection_index == len(self._cleanup_selections) + 2:
-                self._refresh_cleanup_display()
-                return
-
-            if selection_index == len(self._cleanup_selections):
-                self._set_cleanup_selection_state(
-                    selection["id"] for selection in self._cleanup_selections
-                )
-                continue
-
-            if selection_index == len(self._cleanup_selections) + 1:
-                self._set_cleanup_selection_state(set())
-                continue
-
-            selected_item = self._cleanup_selections[selection_index]
-            selected_item["selected"] = not selected_item["selected"]
-            self._refresh_cleanup_display()
+        selected_ids = open_cleanup_window(
+            self._addon.getAddonInfo("path"),
+            self._cleanup_selections,
+        )
+        if selected_ids is None:
+            return
+        self._set_cleanup_selection_state(selected_ids)
 
     def _open_backup_review(self):
         while True:
@@ -231,6 +212,9 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         if not selected_path:
             log.info("Restore archive browse canceled")
             return
+        if os.path.isdir(selected_path):
+            log.info(f"Restore archive browse returned directory path; treating as cancel: {selected_path}")
+            return
 
         log.info(f"Restore archive selected: {selected_path}")
 
@@ -243,7 +227,7 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 compose_dialog_text(
                     "Restore cannot start.",
                     str(exc),
-                    "Choose a valid KodiMirror backup zip.",
+                    "Choose a valid Kodi Mirror backup zip.",
                 ),
             )
             return
