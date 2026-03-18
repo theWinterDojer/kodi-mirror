@@ -39,6 +39,7 @@ from resources.lib.constants import (
     CONTROL_ID_CLEANUP_STATUS,
     CONTROL_ID_CLOSE,
     CONTROL_ID_RESTORE,
+    CONTROL_ID_RESTORE_ARCHIVE_PATH,
     CONTROL_ID_SETTINGS,
     MAIN_WINDOW_RESOLUTION,
     MAIN_WINDOW_SKIN,
@@ -52,11 +53,13 @@ class MainWindow(xbmcgui.WindowXMLDialog):
         self._addon_name = kwargs["addon_name"]
         self._cleanup_selections = build_cleanup_selections(kwargs["runtime_paths"])
         self._destination_state = kwargs["destination_state"]
+        self._restore_archive_path = None
         self._runtime_paths = kwargs["runtime_paths"]
 
     def onInit(self):
         self._refresh_destination_display()
         self._refresh_cleanup_display()
+        self._refresh_restore_display()
         self.setFocusId(CONTROL_ID_BACKUP)
 
     def _refresh_destination_display(self):
@@ -95,6 +98,10 @@ class MainWindow(xbmcgui.WindowXMLDialog):
 
         self.getControl(CONTROL_ID_CLEANUP_SELECTIONS).setText(cleanup_label)
         self.getControl(CONTROL_ID_CLEANUP_STATUS).setText(status_label)
+
+    def _refresh_restore_display(self):
+        restore_path = self._restore_archive_path or "No backup archive selected."
+        self.getControl(CONTROL_ID_RESTORE_ARCHIVE_PATH).setText(restore_path)
 
     def _set_cleanup_selection_state(self, selected_ids):
         selected_ids = set(selected_ids)
@@ -235,6 +242,8 @@ class MainWindow(xbmcgui.WindowXMLDialog):
             "Restore archive validated successfully: "
             f"{archive_details['entry_count']} entries"
         )
+        self._restore_archive_path = selected_path
+        self._refresh_restore_display()
 
         try:
             preflight = run_restore_preflight(self._runtime_paths, archive_details)
@@ -295,6 +304,22 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                     return
                 if selection == 0:
                     break
+
+        while True:
+            selection = xbmcgui.Dialog().select(
+                "Start restore",
+                [
+                    "Start restore",
+                    "Cancel",
+                    "The restore process can take a few minutes.",
+                    "Please be patient.",
+                ],
+            )
+            if selection in (-1, 1):
+                log.info("Restore canceled at final confirmation")
+                return
+            if selection == 0:
+                break
 
         progress = BackupProgress(xbmcgui.DialogProgress())
         progress.start("Restore")

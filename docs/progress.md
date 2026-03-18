@@ -843,6 +843,11 @@ Open items to resolve before implementation starts:
 - `Metadata wording pass`: parsed `addon.xml` after replacing the ambiguous `remote-friendly` summary wording with `python3 -c "import xml.etree.ElementTree as ET; ET.parse('addon.xml')"`
 - `Metadata wording pass`: confirmed the old `remote-friendly` phrasing is gone and the new D-pad wording is present in addon metadata and README with `rg -n "remote-friendly|optimized for D-pad controls" addon.xml README.md`
 - `Metadata wording pass`: checked the metadata/documentation patch for whitespace and formatting errors with `git diff --check addon.xml README.md docs/progress.md`
+- `Restore confirmation pass`: compiled the updated restore UI/controller surface with `python3 -m py_compile resources/lib/constants.py resources/lib/main_window.py tests/manual_ui_asset_check.py tests/manual_restore_warning_check.py tests/manual_restore_live_check.py tests/manual_restore_live_skip_check.py`
+- `Restore confirmation pass`: revalidated the main window XML asset after replacing the restore warning copy with an archive-path field via `python3 tests/manual_ui_asset_check.py`
+- `Restore confirmation pass`: revalidated restore warning behavior after inserting the final restore confirmation step with `python3 tests/manual_restore_warning_check.py`
+- `Restore confirmation pass`: revalidated live restore success and skip reporting after adding the confirmation dialog with `python3 tests/manual_restore_live_check.py` and `python3 tests/manual_restore_live_skip_check.py`
+- `Restore confirmation pass`: confirmed the old restore-card warning copy is gone and the new archive-path / confirmation text is present with `rg -n "Warnings are shown for platform or Kodi version differences|Archive Path|The restore process can take a few minutes|Please be patient|Restore canceled at final confirmation" resources/lib resources/skins/default/1080i tests`
 
 ## Change Log
 
@@ -926,6 +931,7 @@ Open items to resolve before implementation starts:
 
 - Completed `CP-023` with a new evergreen `README.md` covering current product behavior, install flow, backup and restore usage, current operational notes, and the Android file-permissions note for missing backup visibility
 - Updated addon metadata and README wording to describe the product as optimized for D-pad controls instead of using `remote-friendly`, avoiding confusion with remote filesystem paths
+- Updated the restore card to show the selected backup-zip path and added a final restore confirmation dialog that tells the user the restore process can take a few minutes
 
 ## Session Handoff
 
@@ -935,8 +941,10 @@ Latest state:
 - Windows now has strong live QA evidence for the normal path: backup succeeds, same-machine live restore succeeds, and locked files are reported as skips instead of failing the operation.
 - Backup and restore flows are implemented end to end, including manifest validation, restore preflight, live overwrite-only apply, self-exclusion, and skip reporting for locked or unwritable files.
 - The main window is now a remote-first modal with a simplified action rail and three status cards for backup folder, restore, and cleanup.
+- The restore card now shows the selected backup-zip path instead of the static warning-copy block, so the current restore target stays visible on the main screen.
 - Cleanup now uses a custom Kodi-styled window instead of the stock select dialog, with explicit D-pad navigation and an `Apply` return path to the backup review step.
 - Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
+- Restore now includes a final select-style confirmation dialog before live apply that tells the user the process can take a few minutes and to be patient.
 - User-facing metadata and branding now use `Kodi Mirror`, and the addon zip includes the packaged icon at `resources/icon.png`.
 - Addon metadata and README now describe the product as optimized for D-pad controls rather than `remote-friendly`, so the wording is clearer for backup-path discussions.
 - Packaging continues to produce `dist/script.kodi.mirror-0.1.0.zip` with the correct top-level addon-folder layout.

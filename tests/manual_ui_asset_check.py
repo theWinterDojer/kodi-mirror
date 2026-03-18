@@ -71,6 +71,8 @@ def main():
     assert "Restore stages" not in xml_text
     assert ">Flow<" not in xml_text
     assert "applies after restart" not in xml_text
+    assert "Warnings are shown for platform or Kodi version differences." not in xml_text
+    assert "Archive Path" in xml_text
 
     cleanup_root = _parse_xml(cleanup_xml_path)
     cleanup_image_controls = cleanup_root.findall(".//control[@type='image']")
