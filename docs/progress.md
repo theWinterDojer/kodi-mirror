@@ -848,6 +848,11 @@ Open items to resolve before implementation starts:
 - `Restore confirmation pass`: revalidated restore warning behavior after inserting the final restore confirmation step with `python3 tests/manual_restore_warning_check.py`
 - `Restore confirmation pass`: revalidated live restore success and skip reporting after adding the confirmation dialog with `python3 tests/manual_restore_live_check.py` and `python3 tests/manual_restore_live_skip_check.py`
 - `Restore confirmation pass`: confirmed the old restore-card warning copy is gone and the new archive-path / confirmation text is present with `rg -n "Warnings are shown for platform or Kodi version differences|Archive Path|The restore process can take a few minutes|Please be patient|Restore canceled at final confirmation" resources/lib resources/skins/default/1080i tests`
+- `Restore card revert pass`: compiled the updated restore UI/controller surface after removing the archive-path field with `python3 -m py_compile resources/lib/constants.py resources/lib/main_window.py tests/manual_ui_asset_check.py tests/manual_restore_warning_check.py tests/manual_restore_live_check.py tests/manual_restore_live_skip_check.py`
+- `Restore card revert pass`: revalidated the main window XML asset after restoring the platform/Kodi warning copy in the restore card with `python3 tests/manual_ui_asset_check.py`
+- `Restore card revert pass`: revalidated restore warning behavior and the final restore confirmation step with `python3 tests/manual_restore_warning_check.py`
+- `Restore card revert pass`: revalidated live restore success and skip reporting after removing the archive-path field with `python3 tests/manual_restore_live_check.py` and `python3 tests/manual_restore_live_skip_check.py`
+- `Restore card revert pass`: confirmed the restore card warning copy is back, the archive-path label is gone, and the final confirmation text remains present with `rg -n "Warnings are shown for platform or Kodi version differences|Archive Path|The restore process can take a few minutes|Please be patient|Restore canceled at final confirmation" resources/lib resources/skins/default/1080i tests`
 
 ## Change Log
 
@@ -932,6 +937,7 @@ Open items to resolve before implementation starts:
 - Completed `CP-023` with a new evergreen `README.md` covering current product behavior, install flow, backup and restore usage, current operational notes, and the Android file-permissions note for missing backup visibility
 - Updated addon metadata and README wording to describe the product as optimized for D-pad controls instead of using `remote-friendly`, avoiding confusion with remote filesystem paths
 - Updated the restore card to show the selected backup-zip path and added a final restore confirmation dialog that tells the user the restore process can take a few minutes
+- Reverted the restore-card archive-path display, restored the platform/Kodi warning copy in that panel, and kept the final restore confirmation dialog
 
 ## Session Handoff
 
@@ -941,7 +947,7 @@ Latest state:
 - Windows now has strong live QA evidence for the normal path: backup succeeds, same-machine live restore succeeds, and locked files are reported as skips instead of failing the operation.
 - Backup and restore flows are implemented end to end, including manifest validation, restore preflight, live overwrite-only apply, self-exclusion, and skip reporting for locked or unwritable files.
 - The main window is now a remote-first modal with a simplified action rail and three status cards for backup folder, restore, and cleanup.
-- The restore card now shows the selected backup-zip path instead of the static warning-copy block, so the current restore target stays visible on the main screen.
+- The restore card now keeps the platform/Kodi warning copy in the panel, while the final restore confirmation dialog remains in place before live apply starts.
 - Cleanup now uses a custom Kodi-styled window instead of the stock select dialog, with explicit D-pad navigation and an `Apply` return path to the backup review step.
 - Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
 - Restore now includes a final select-style confirmation dialog before live apply that tells the user the process can take a few minutes and to be patient.
