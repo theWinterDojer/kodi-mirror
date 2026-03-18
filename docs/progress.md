@@ -840,6 +840,9 @@ Open items to resolve before implementation starts:
 - `CP-023`: verified the new README install and usage guidance plus the Android permissions note with `python3 -c "from pathlib import Path; text = Path('README.md').read_text(); assert 'Install from zip file' in text; assert 'Allow management of all files' in text; assert '/storage/emulated/0/Backup' in text; print('readme content ok')"`
 - `CP-023`: confirmed the packaged addon artifact referenced by the README still exists and retains the Kodi-required top-level addon folder with `python3 -c "import os, zipfile; archive = 'dist/script.kodi.mirror-0.1.0.zip'; assert os.path.exists(archive); names = set(zipfile.ZipFile(archive).namelist()); assert 'script.kodi.mirror/addon.xml' in names; print('package reference ok')"`
 - `CP-023`: checked the documentation patch for whitespace and formatting errors with `git diff --check README.md docs/progress.md`
+- `Metadata wording pass`: parsed `addon.xml` after replacing the ambiguous `remote-friendly` summary wording with `python3 -c "import xml.etree.ElementTree as ET; ET.parse('addon.xml')"`
+- `Metadata wording pass`: confirmed the old `remote-friendly` phrasing is gone and the new D-pad wording is present in addon metadata and README with `rg -n "remote-friendly|optimized for D-pad controls" addon.xml README.md`
+- `Metadata wording pass`: checked the metadata/documentation patch for whitespace and formatting errors with `git diff --check addon.xml README.md docs/progress.md`
 
 ## Change Log
 
@@ -922,6 +925,7 @@ Open items to resolve before implementation starts:
 ### 2026-03-18
 
 - Completed `CP-023` with a new evergreen `README.md` covering current product behavior, install flow, backup and restore usage, current operational notes, and the Android file-permissions note for missing backup visibility
+- Updated addon metadata and README wording to describe the product as optimized for D-pad controls instead of using `remote-friendly`, avoiding confusion with remote filesystem paths
 
 ## Session Handoff
 
@@ -934,6 +938,7 @@ Latest state:
 - Cleanup now uses a custom Kodi-styled window instead of the stock select dialog, with explicit D-pad navigation and an `Apply` return path to the backup review step.
 - Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
 - User-facing metadata and branding now use `Kodi Mirror`, and the addon zip includes the packaged icon at `resources/icon.png`.
+- Addon metadata and README now describe the product as optimized for D-pad controls rather than `remote-friendly`, so the wording is clearer for backup-path discussions.
 - Packaging continues to produce `dist/script.kodi.mirror-0.1.0.zip` with the correct top-level addon-folder layout.
 - The repo now has an evergreen `README.md` with install and usage instructions, current operational notes, and the Android `Allow management of all files` permissions note for missing backup visibility.
 - `AGENTS.md` now codifies the Kodi-specific UI/runtime lessons from this session so future edits preserve explicit remote navigation, contained text layouts, and defensive browse-cancel handling.

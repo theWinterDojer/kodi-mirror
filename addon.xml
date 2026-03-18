@@ -10,7 +10,7 @@
     <provides>executable</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Remote-friendly Kodi backup and live restore.</summary>
+    <summary lang="en_GB">Kodi backup and live restore addon optimized for D-pad controls.</summary>
     <description lang="en_GB">Kodi Mirror backs up the active userdata and addons roots into a ZIP archive and applies best-effort live restore with clear skipped-file reporting.</description>
     <platform>all</platform>
     <license>MIT</license>

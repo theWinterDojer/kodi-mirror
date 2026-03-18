@@ -1,6 +1,6 @@
 # Kodi Mirror
 
-Kodi Mirror is a Kodi-native backup and restore addon built for simple TV-remote use. It creates a ZIP backup of the active Kodi `userdata/` and `addons/` roots, and it can apply that backup back into the active Kodi environment with clear warning and skip reporting.
+Kodi Mirror is a Kodi-native backup and restore addon optimized for D-pad controls. It creates a ZIP backup of the active Kodi `userdata/` and `addons/` roots, and it can apply that backup back into the active Kodi environment with clear warning and skip reporting.
 
 ## What It Does
 
