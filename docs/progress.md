@@ -1,6 +1,6 @@
 # KodiMirror Progress
 
-Last updated: 2026-03-17
+Last updated: 2026-03-18
 
 ## Project Summary
 
@@ -602,7 +602,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-020` Implement clear user messaging for live restore warnings and completion.
 - [x] `CP-021` Apply black / blue / white Kodi UI styling and remote-friendly layout polish.
 - [x] `CP-022` Package addon into an installable zip for GitHub distribution.
-- [ ] `CP-023` Write evergreen README with install and use instructions only.
+- [x] `CP-023` Write evergreen README with install and use instructions only.
 - [x] `CP-024` Run targeted validation for backup flow on one desktop platform.
 - [ ] `CP-025` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
 - [ ] `CP-026` Run targeted validation for live restore behavior and cross-platform warning messaging.
@@ -835,6 +835,12 @@ Open items to resolve before implementation starts:
 - `Live QA`: Windows live restore completed successfully from `C:\Users\Bryce\Desktop\KodiBackup-20260317-063003.zip` with `Restore warnings generated: none`, `restored_file_count=11530`, and `skipped_file_count=2`
 - `Live QA`: Windows live restore skip reporting captured the expected locked-file behavior for `addons/peripheral.joystick/peripheral.joystick.dll` and `addons/service.subtitles.opensubtitles-com/resources/lib/os/model/response/.placeholder`
 
+### 2026-03-18
+
+- `CP-023`: verified the new README install and usage guidance plus the Android permissions note with `python3 -c "from pathlib import Path; text = Path('README.md').read_text(); assert 'Install from zip file' in text; assert 'Allow management of all files' in text; assert '/storage/emulated/0/Backup' in text; print('readme content ok')"`
+- `CP-023`: confirmed the packaged addon artifact referenced by the README still exists and retains the Kodi-required top-level addon folder with `python3 -c "import os, zipfile; archive = 'dist/script.kodi.mirror-0.1.0.zip'; assert os.path.exists(archive); names = set(zipfile.ZipFile(archive).namelist()); assert 'script.kodi.mirror/addon.xml' in names; print('package reference ok')"`
+- `CP-023`: checked the documentation patch for whitespace and formatting errors with `git diff --check README.md docs/progress.md`
+
 ## Change Log
 
 ### 2026-03-15
@@ -911,12 +917,17 @@ Open items to resolve before implementation starts:
 - Renamed the display name to `Kodi Mirror`, added a packaged icon, and corrected stale addon metadata text that still described staged restore
 - Fixed restore browse cancel handling so backing out of archive selection no longer shows a false `Backup archive does not exist` error
 - Live Windows QA now confirms the updated UI can run a full backup and same-machine live restore successfully, with expected locked-file skips reported instead of failing the restore
+- Updated `AGENTS.md` to codify explicit Kodi remote-navigation rules, runtime text-containment expectations, and defensive browse-cancel handling based on issues uncovered during the Windows UI pass
+
+### 2026-03-18
+
+- Completed `CP-023` with a new evergreen `README.md` covering current product behavior, install flow, backup and restore usage, current operational notes, and the Android file-permissions note for missing backup visibility
 
 ## Session Handoff
 
 Latest state:
 
-- `CP-001` through `CP-022` are complete, and `CP-024` is complete.
+- `CP-001` through `CP-024` are complete.
 - Windows now has strong live QA evidence for the normal path: backup succeeds, same-machine live restore succeeds, and locked files are reported as skips instead of failing the operation.
 - Backup and restore flows are implemented end to end, including manifest validation, restore preflight, live overwrite-only apply, self-exclusion, and skip reporting for locked or unwritable files.
 - The main window is now a remote-first modal with a simplified action rail and three status cards for backup folder, restore, and cleanup.
@@ -924,14 +935,15 @@ Latest state:
 - Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
 - User-facing metadata and branding now use `Kodi Mirror`, and the addon zip includes the packaged icon at `resources/icon.png`.
 - Packaging continues to produce `dist/script.kodi.mirror-0.1.0.zip` with the correct top-level addon-folder layout.
-- Open work is now concentrated on `CP-023`, `CP-025`, `CP-026`, and `CP-027`.
+- The repo now has an evergreen `README.md` with install and usage instructions, current operational notes, and the Android `Allow management of all files` permissions note for missing backup visibility.
+- `AGENTS.md` now codifies the Kodi-specific UI/runtime lessons from this session so future edits preserve explicit remote navigation, contained text layouts, and defensive browse-cancel handling.
+- Open work is now concentrated on `CP-025`, `CP-026`, and `CP-027`.
 
 What the next session should do:
 
-1. Complete `CP-023` by writing the evergreen README now that Windows backup/live-restore behavior is confirmed.
-2. Run `CP-025` Android / Fire TV destination and permission validation on target hardware.
-3. Keep `CP-026` open for broader cross-platform warning validation, especially the mismatch-warning path that same-machine Windows restore does not exercise.
-4. Prepare `CP-027` once README and remaining platform validation evidence are in place.
+1. Run `CP-025` Android / Fire TV destination and permission validation on target hardware, including the Android storage-permissions path documented in the new README.
+2. Keep `CP-026` open for broader cross-platform warning validation, especially the mismatch-warning path that same-machine Windows restore does not exercise.
+3. Prepare `CP-027` once Android / Fire TV validation and the remaining warning-path evidence are in place.
 
 Constraints to keep in view:
 
