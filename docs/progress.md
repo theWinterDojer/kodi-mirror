@@ -853,6 +853,15 @@ Open items to resolve before implementation starts:
 - `Restore card revert pass`: revalidated restore warning behavior and the final restore confirmation step with `python3 tests/manual_restore_warning_check.py`
 - `Restore card revert pass`: revalidated live restore success and skip reporting after removing the archive-path field with `python3 tests/manual_restore_live_check.py` and `python3 tests/manual_restore_live_skip_check.py`
 - `Restore card revert pass`: confirmed the restore card warning copy is back, the archive-path label is gone, and the final confirmation text remains present with `rg -n "Warnings are shown for platform or Kodi version differences|Archive Path|The restore process can take a few minutes|Please be patient|Restore canceled at final confirmation" resources/lib resources/skins/default/1080i tests`
+- `Restore confirm modal pass`: compiled the updated restore confirmation modal, controller wiring, and targeted checks with `python3 -m py_compile resources/lib/constants.py resources/lib/main_window.py resources/lib/restore_confirm_window.py tests/manual_ui_asset_check.py tests/manual_restore_warning_check.py tests/manual_restore_live_check.py tests/manual_restore_live_skip_check.py`
+- `Restore confirm modal pass`: revalidated the main window and restore confirmation XML assets after replacing the stock selectable confirmation text with a custom modal via `python3 tests/manual_ui_asset_check.py`
+- `Restore confirm modal pass`: revalidated restore warning behavior after replacing the final stock confirmation list with the custom modal via `python3 tests/manual_restore_warning_check.py`
+- `Restore confirm modal pass`: revalidated live restore success and skip reporting after wiring the custom confirmation modal with `python3 tests/manual_restore_live_check.py` and `python3 tests/manual_restore_live_skip_check.py`
+- `Restore confirm modal pass`: confirmed the controller now opens the custom confirmation window and the final confirmation copy exists only in the XML modal with `rg -n "Dialog\\(\\)\\.select\\(\\s*\\\"Start restore\\\"|open_restore_confirm_window|The restore process can take a few minutes|Please be patient|script-kodi-mirror-restore-confirm.xml" resources/lib resources/skins/default/1080i tests`
+- `Restore confirm modal pass`: rebuilt the installable addon zip after adding the custom restore confirmation modal with `python3 tools/build_addon_zip.py`
+- `Restore confirm modal pass`: revalidated package naming, top-level addon-folder layout, and addon-only contents with `python3 tests/manual_package_build_check.py`
+- `Restore confirm modal pass`: confirmed the packaged addon zip includes the new restore confirmation module and XML asset with `python3 -c "import zipfile; names=set(zipfile.ZipFile('dist/script.kodi.mirror-0.1.0.zip').namelist()); assert 'script.kodi.mirror/resources/lib/restore_confirm_window.py' in names; assert 'script.kodi.mirror/resources/skins/default/1080i/script-kodi-mirror-restore-confirm.xml' in names; print('restore confirm packaged ok')"`
+- `Restore confirm modal pass`: revalidated the XML asset after adding explicit D-pad focus paths and confirmed `onup` / `ondown` / `onleft` / `onright` navigation in the modal footer with `python3 tests/manual_ui_asset_check.py` and `rg -n "onup|ondown|onleft|onright" resources/skins/default/1080i/script-kodi-mirror-restore-confirm.xml`
 
 ## Change Log
 
@@ -938,6 +947,7 @@ Open items to resolve before implementation starts:
 - Updated addon metadata and README wording to describe the product as optimized for D-pad controls instead of using `remote-friendly`, avoiding confusion with remote filesystem paths
 - Updated the restore card to show the selected backup-zip path and added a final restore confirmation dialog that tells the user the restore process can take a few minutes
 - Reverted the restore-card archive-path display, restored the platform/Kodi warning copy in that panel, and kept the final restore confirmation dialog
+- Replaced the final stock restore confirmation list with a custom modal so the confirmation text is static copy, only `Start restore` and `Cancel` are selectable, and the footer has explicit D-pad focus paths
 
 ## Session Handoff
 
@@ -950,7 +960,7 @@ Latest state:
 - The restore card now keeps the platform/Kodi warning copy in the panel, while the final restore confirmation dialog remains in place before live apply starts.
 - Cleanup now uses a custom Kodi-styled window instead of the stock select dialog, with explicit D-pad navigation and an `Apply` return path to the backup review step.
 - Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
-- Restore now includes a final select-style confirmation dialog before live apply that tells the user the process can take a few minutes and to be patient.
+- Restore now includes a custom confirmation modal before live apply that shows static guidance text and keeps only `Start restore` and `Cancel` as selectable actions.
 - User-facing metadata and branding now use `Kodi Mirror`, and the addon zip includes the packaged icon at `resources/icon.png`.
 - Addon metadata and README now describe the product as optimized for D-pad controls rather than `remote-friendly`, so the wording is clearer for backup-path discussions.
 - Packaging continues to produce `dist/script.kodi.mirror-0.1.0.zip` with the correct top-level addon-folder layout.

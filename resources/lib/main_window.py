@@ -28,6 +28,7 @@ from resources.lib.destination import (
     save_selected_backup_destination,
 )
 from resources.lib.restore_archive import RestoreArchiveError, validate_restore_archive
+from resources.lib.restore_confirm_window import open_restore_confirm_window
 from resources.lib.restore_live import RestoreLiveError, apply_live_restore
 from resources.lib.restore_preflight import RestorePreflightError, run_restore_preflight
 from resources.lib.restore_warning import RestoreWarningError, build_restore_warnings
@@ -296,21 +297,9 @@ class MainWindow(xbmcgui.WindowXMLDialog):
                 if selection == 0:
                     break
 
-        while True:
-            selection = xbmcgui.Dialog().select(
-                "Start restore",
-                [
-                    "Start restore",
-                    "Cancel",
-                    "The restore process can take a few minutes.",
-                    "Please be patient.",
-                ],
-            )
-            if selection in (-1, 1):
-                log.info("Restore canceled at final confirmation")
-                return
-            if selection == 0:
-                break
+        if not open_restore_confirm_window(self._addon.getAddonInfo("path")):
+            log.info("Restore canceled at final confirmation")
+            return
 
         progress = BackupProgress(xbmcgui.DialogProgress())
         progress.start("Restore")

@@ -12,6 +12,7 @@ from resources.lib.constants import (
     MAIN_WINDOW_RESOLUTION,
     MAIN_WINDOW_SKIN,
     MAIN_WINDOW_XML,
+    RESTORE_CONFIRM_WINDOW_XML,
 )
 
 
@@ -35,6 +36,7 @@ def _parse_xml(xml_path):
 def main():
     main_xml_path = _resolve_xml_path(MAIN_WINDOW_XML)
     cleanup_xml_path = _resolve_xml_path(CLEANUP_WINDOW_XML)
+    restore_confirm_xml_path = _resolve_xml_path(RESTORE_CONFIRM_WINDOW_XML)
     media_path = os.path.join(
         REPO_ROOT,
         "resources",
@@ -95,6 +97,28 @@ def main():
     assert ">Apply<" in cleanup_xml_text
     assert "Clear all" not in cleanup_xml_text
     assert "Apply cleanup selection" not in cleanup_xml_text
+
+    restore_confirm_root = _parse_xml(restore_confirm_xml_path)
+    restore_confirm_image_controls = restore_confirm_root.findall(".//control[@type='image']")
+    assert restore_confirm_image_controls, "expected restore confirm backdrop and panel images"
+
+    restore_confirm_panel = None
+    for control in restore_confirm_image_controls:
+        left = control.findtext("left")
+        top = control.findtext("top")
+        width = control.findtext("width")
+        height = control.findtext("height")
+        if left == "360" and top == "220" and width == "1200" and height == "520":
+            restore_confirm_panel = control
+
+    assert restore_confirm_panel is not None, "expected centered restore confirm modal panel image control"
+
+    with open(restore_confirm_xml_path, "r", encoding="utf-8") as xml_file:
+        restore_confirm_xml_text = xml_file.read()
+    assert "The restore process can take a few minutes." in restore_confirm_xml_text
+    assert "Please be patient." in restore_confirm_xml_text
+    assert restore_confirm_xml_text.count(">Start restore<") == 2
+    assert ">Cancel<" in restore_confirm_xml_text
     print("ui asset ok")
 
 
