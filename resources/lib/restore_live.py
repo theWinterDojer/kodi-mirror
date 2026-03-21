@@ -19,6 +19,14 @@ class RestoreLiveError(RuntimeError):
     pass
 
 
+LIVE_RESTORE_SKIP_EXCEPTIONS = (
+    OSError,
+    EOFError,
+    NotImplementedError,
+    zipfile.BadZipFile,
+)
+
+
 def _filesystem_path(path, platform_name=None):
     if platform_name is None:
         platform_name = os.name
@@ -167,7 +175,7 @@ def apply_live_restore(runtime_paths, preflight, progress_callback=None):
 
                     with archive.open(archive_info, "r") as source_handle:
                         _copy_archive_member(source_handle, destination_path)
-                except OSError as exc:
+                except LIVE_RESTORE_SKIP_EXCEPTIONS as exc:
                     _record_skip(summary, normalized_name, destination_path, exc)
                     continue
 

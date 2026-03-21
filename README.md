@@ -41,13 +41,14 @@ If you do not see your backup `.zip` file or backup folder on an Android device,
 ## Restore
 
 1. Open Kodi Mirror.
-2. Choose `Restore` and select a backup zip.
+2. Choose `Restore` and select a Kodi Mirror backup zip.
 3. If Kodi Mirror detects a platform-family or Kodi-major mismatch, it shows a warning and lets you continue.
 4. Restore runs live against the active `userdata/` and `addons/` roots.
 5. Kodi Mirror reports restored and skipped files when the restore completes.
 
 ## Notes
 
+- Restore requires a Kodi Mirror backup zip that includes `backup_manifest.json`.
 - Restore is best-effort while Kodi is running. Locked or unwritable files are skipped and reported instead of stopping the whole restore.
 - Restore does not delete files that are absent from the backup zip.
 - Cross-platform restore is allowed, but some platform-specific addons may not work after restore.

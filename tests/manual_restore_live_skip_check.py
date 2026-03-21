@@ -66,6 +66,43 @@ def main():
         assert "forced locked file" in skipped_entry["reason"]
         assert os.path.isfile(os.path.join(runtime_paths["userdata"], "guisettings.xml"))
         assert not os.path.exists(os.path.join(runtime_paths["addons"], "plugin.video.example", "addon.xml"))
+
+        corrupt_targets = []
+
+        def corrupt_copy(source_handle, destination_path):
+            corrupt_targets.append(destination_path)
+            if destination_path.endswith(os.path.join("plugin.video.example", "addon.xml")):
+                raise zipfile.BadZipFile("forced bad member")
+            return original_copy(source_handle, destination_path)
+
+        restore_live._copy_archive_member = corrupt_copy
+        try:
+            corrupt_result = restore_live.apply_live_restore(runtime_paths, preflight)
+        finally:
+            restore_live._copy_archive_member = original_copy
+
+        assert len(corrupt_targets) == 2
+        assert corrupt_result["restored_file_count"] == 1
+        assert corrupt_result["skipped_file_count"] == 1
+        corrupt_skipped_entry = corrupt_result["skipped_entries"][0]
+        assert corrupt_skipped_entry["archive_path"] == "addons/plugin.video.example/addon.xml"
+        assert "forced bad member" in corrupt_skipped_entry["reason"]
+
+        def runtime_failure_copy(source_handle, destination_path):
+            if destination_path.endswith(os.path.join("plugin.video.example", "addon.xml")):
+                raise RuntimeError("forced runtime failure")
+            return original_copy(source_handle, destination_path)
+
+        restore_live._copy_archive_member = runtime_failure_copy
+        try:
+            try:
+                restore_live.apply_live_restore(runtime_paths, preflight)
+            except RuntimeError as exc:
+                assert "forced runtime failure" in str(exc)
+            else:
+                raise AssertionError("Expected runtime restore bug to propagate.")
+        finally:
+            restore_live._copy_archive_member = original_copy
     finally:
         shutil.rmtree(temp_root)
 

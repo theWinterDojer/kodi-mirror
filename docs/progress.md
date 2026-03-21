@@ -1,6 +1,6 @@
 # KodiMirror Progress
 
-Last updated: 2026-03-18
+Last updated: 2026-03-21
 
 ## Project Summary
 
@@ -304,6 +304,7 @@ Behavior:
 
 - fail before live restore if a required preflight check fails
 - show a short, explicit message describing the failure
+- do not perform a full archive integrity scan before the user confirms the live restore
 
 ### Restore Behavior
 
@@ -328,7 +329,7 @@ Restore self-exclusions:
 Restore flow detail:
 
 1. User selects a backup zip.
-2. Addon validates the archive and reads `backup_manifest.json`.
+2. Addon validates basic ZIP readability, confirms `backup_manifest.json` exists, and reads manifest metadata.
 3. Addon warns on platform or Kodi-version mismatch.
 4. If warnings are shown, the user acknowledges them and restore continues.
 5. Addon applies the restore directly into live `userdata/` and `addons/`, skipping this addon's own files.
@@ -337,6 +338,7 @@ Restore flow detail:
 Known limitation:
 
 Live restore is best-effort while Kodi is running. Locked files such as active addon binaries may remain unchanged and are reported as skipped instead of causing a full restore stop.
+Archive corruption may also surface during live restore instead of being rejected up front, and affected files are reported through the restore result.
 
 ## Permissions and Platform Notes
 
@@ -604,7 +606,7 @@ Priority order below should be followed unless a blocker forces reordering.
 - [x] `CP-022` Package addon into an installable zip for GitHub distribution.
 - [x] `CP-023` Write evergreen README with install and use instructions only.
 - [x] `CP-024` Run targeted validation for backup flow on one desktop platform.
-- [ ] `CP-025` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
+- [x] `CP-025` Run targeted validation for destination and permission behavior on Android / Fire TV class hardware.
 - [ ] `CP-026` Run targeted validation for live restore behavior and cross-platform warning messaging.
 - [ ] `CP-027` Prepare first release candidate and record known limitations.
 
@@ -949,30 +951,43 @@ Open items to resolve before implementation starts:
 - Reverted the restore-card archive-path display, restored the platform/Kodi warning copy in that panel, and kept the final restore confirmation dialog
 - Replaced the final stock restore confirmation list with a custom modal so the confirmation text is static copy, only `Start restore` and `Cancel` are selectable, and the footer has explicit D-pad focus paths
 
+### 2026-03-21
+
+- `CP-025`: validated the real-device destination and permission path on Android hardware and confirmed backup and restore worked successfully end to end
+- `CP-025`: validated the same real-device path on Fire TV / Fire Stick hardware and confirmed the addon's backup and restore workflow worked successfully there as well
+- `CP-025`: confirmed the current product direction and D-pad-focused UI hold up on the hardest target hardware now in scope for v1
+- `Restore selection performance`: removed the pre-confirmation full ZIP integrity scan so selecting a Kodi Mirror backup reaches the final restore confirmation faster on large Android / Fire TV backups
+- `Restore selection performance`: kept `backup_manifest.json` as the required Kodi Mirror archive contract while leaving platform and Kodi-version differences as warning-only behavior
+- `Restore selection performance`: narrowed live-restore skip handling so concrete file and archive read failures are reported as skipped results, while unexpected internal runtime failures now propagate instead of being mislabeled as normal restore skips
+- `Restore selection performance`: compiled the updated restore modules and revalidated archive selection, restore preflight, normal live restore, and skip handling with `python3 -m py_compile resources/lib/restore_archive.py resources/lib/restore_live.py tests/manual_restore_live_skip_check.py`, `python3 tests/manual_restore_archive_check.py`, `python3 tests/manual_restore_preflight_check.py`, `python3 tests/manual_restore_live_check.py`, and `python3 tests/manual_restore_live_skip_check.py`
+
 ## Session Handoff
 
 Latest state:
 
-- `CP-001` through `CP-024` are complete.
+- `CP-001` through `CP-025` are complete.
 - Windows now has strong live QA evidence for the normal path: backup succeeds, same-machine live restore succeeds, and locked files are reported as skips instead of failing the operation.
+- Android now has real-device QA evidence for the normal path: destination access, backup creation, and restore all worked successfully.
+- Fire TV / Fire Stick now has real-device QA evidence for the normal path: destination access, backup creation, and restore all worked successfully.
 - Backup and restore flows are implemented end to end, including manifest validation, restore preflight, live overwrite-only apply, self-exclusion, and skip reporting for locked or unwritable files.
+- Restore archive selection now checks ZIP readability and the required Kodi Mirror manifest without doing a full integrity scan before the final confirmation step.
 - The main window is now a remote-first modal with a simplified action rail and three status cards for backup folder, restore, and cleanup.
 - The restore card now keeps the platform/Kodi warning copy in the panel, while the final restore confirmation dialog remains in place before live apply starts.
 - Cleanup now uses a custom Kodi-styled window instead of the stock select dialog, with explicit D-pad navigation and an `Apply` return path to the backup review step.
 - Restore archive cancel now exits cleanly without a false error dialog, including the Windows case where Kodi returns the current folder path on cancel.
 - Restore now includes a custom confirmation modal before live apply that shows static guidance text and keeps only `Start restore` and `Cancel` as selectable actions.
+- Live restore still treats concrete file and archive read failures as best-effort skipped results, but no longer hides unexpected internal runtime failures as normal skipped-file cases.
 - User-facing metadata and branding now use `Kodi Mirror`, and the addon zip includes the packaged icon at `resources/icon.png`.
 - Addon metadata and README now describe the product as optimized for D-pad controls rather than `remote-friendly`, so the wording is clearer for backup-path discussions.
 - Packaging continues to produce `dist/script.kodi.mirror-0.1.0.zip` with the correct top-level addon-folder layout.
 - The repo now has an evergreen `README.md` with install and usage instructions, current operational notes, and the Android `Allow management of all files` permissions note for missing backup visibility.
 - `AGENTS.md` now codifies the Kodi-specific UI/runtime lessons from this session so future edits preserve explicit remote navigation, contained text layouts, and defensive browse-cancel handling.
-- Open work is now concentrated on `CP-025`, `CP-026`, and `CP-027`.
+- Open work is now concentrated on `CP-026` and `CP-027`.
 
 What the next session should do:
 
-1. Run `CP-025` Android / Fire TV destination and permission validation on target hardware, including the Android storage-permissions path documented in the new README.
-2. Keep `CP-026` open for broader cross-platform warning validation, especially the mismatch-warning path that same-machine Windows restore does not exercise.
-3. Prepare `CP-027` once Android / Fire TV validation and the remaining warning-path evidence are in place.
+1. Keep `CP-026` open for broader cross-platform warning validation, especially the mismatch-warning path that same-machine Windows, Android, and Fire TV restores do not exercise.
+2. Prepare `CP-027` once the remaining warning-path evidence is in place.
 
 Constraints to keep in view:
 
