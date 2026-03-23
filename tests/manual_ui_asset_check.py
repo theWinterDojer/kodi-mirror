@@ -33,6 +33,13 @@ def _parse_xml(xml_path):
     return tree.getroot()
 
 
+def _find_control_by_id(root, control_id):
+    for control in root.findall(".//control"):
+        if control.get("id") == str(control_id):
+            return control
+    raise AssertionError(f"expected control id {control_id}")
+
+
 def main():
     main_xml_path = _resolve_xml_path(MAIN_WINDOW_XML)
     cleanup_xml_path = _resolve_xml_path(CLEANUP_WINDOW_XML)
@@ -119,6 +126,15 @@ def main():
     assert "Please be patient." in restore_confirm_xml_text
     assert restore_confirm_xml_text.count(">Start restore<") == 2
     assert ">Cancel<" in restore_confirm_xml_text
+
+    start_button = _find_control_by_id(restore_confirm_root, 1301)
+    cancel_button = _find_control_by_id(restore_confirm_root, 1302)
+    assert start_button.findtext("onup") == "1301"
+    assert start_button.findtext("ondown") == "1301"
+    assert start_button.findtext("onright") == "1302"
+    assert cancel_button.findtext("onup") == "1302"
+    assert cancel_button.findtext("ondown") == "1302"
+    assert cancel_button.findtext("onleft") == "1301"
     print("ui asset ok")
 
 
