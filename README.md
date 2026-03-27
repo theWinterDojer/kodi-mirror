@@ -15,6 +15,10 @@ Kodi Mirror is a Kodi-native backup and restore addon optimized for D-pad contro
 
 Install from the packaged addon zip:
 
+Latest release:
+
+- [GitHub Releases](https://github.com/theWinterDojer/kodi-mirror/releases/latest)
+
 1. Download the current `script.kodi.mirror-<version>.zip` artifact from this repo, or build it locally with `python3 tools/build_addon_zip.py`.
 2. If you build locally, the zip is written to `dist/`.
 3. In Kodi, open `Add-ons`, choose `Install from zip file`, and select the Kodi Mirror zip.
